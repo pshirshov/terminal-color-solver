@@ -332,9 +332,15 @@ inline void print_fm_pairs_tables(
 ) {
     namespace f = ftxui;
 
+    ColorRGB black(palette, 0);  // BLACK
     ColorRGB blue(palette, 4);   // BLUE
     ColorRGB green(palette, 2);  // GREEN
     ColorRGB cyan(palette, 6);   // CYAN
+
+    std::vector<ContrastPair> pairs_on_black = {
+        {1, "Red"}, {2, "Green"}, {3, "Yellow"}, {4, "Blue"},
+        {5, "Magenta"}, {6, "Cyan"}, {7, "White"}
+    };
 
     std::vector<ContrastPair> pairs_on_blue = {
         {0, "Black"}, {1, "Red"}, {2, "Green"}, {3, "Yellow"},
@@ -353,7 +359,8 @@ inline void print_fm_pairs_tables(
 
     // APCA thresholds matching our constraints
     const double APCA_BRIGHT_ON_REGULAR = 30.0;
-    const double APCA_BR_BLACK_ON_BLACK = 15.0;
+    const double APCA_BR_BLACK_ON_BLACK = 40.0;
+    const double APCA_ON_BLACK = 50.0;
     const double APCA_ON_BLUE = 30.0;
     const double APCA_ON_GREEN = 30.0;
     const double APCA_ON_CYAN = 20.0;
@@ -363,14 +370,18 @@ inline void print_fm_pairs_tables(
     );
 
     auto table2 = make_contrast_table(
-        "Colors", APCA_ON_BLUE, palette, pairs_on_blue, blue, "blue"
+        "Colors", APCA_ON_BLACK, palette, pairs_on_black, black, "black"
     );
 
     auto table3 = make_contrast_table(
-        "Colors", APCA_ON_GREEN, palette, pairs_on_green, green, "green"
+        "Colors", APCA_ON_BLUE, palette, pairs_on_blue, blue, "blue"
     );
 
     auto table4 = make_contrast_table(
+        "Colors", APCA_ON_GREEN, palette, pairs_on_green, green, "green"
+    );
+
+    auto table5 = make_contrast_table(
         "Colors", APCA_ON_CYAN, palette, pairs_on_cyan, cyan, "cyan"
     );
 
@@ -381,7 +392,9 @@ inline void print_fm_pairs_tables(
         f::text("  "),
         table3,
         f::text("  "),
-        table4
+        table4,
+        f::text("  "),
+        table5
     });
 
     auto screen = f::Screen::Create(f::Dimension::Fit(layout));

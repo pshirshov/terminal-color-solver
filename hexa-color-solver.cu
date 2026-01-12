@@ -65,7 +65,8 @@ struct OklchSlotConstraint {
 struct ApcaPairConstraint {
     int8_t fg_index;       // Foreground color index (0-15)
     int8_t bg_index;       // Background color index (0-15)
-    double min_apca;        // Minimum APCA contrast (absolute value)
+    double min_apca;       // Minimum APCA contrast (absolute value)
+    double target_apca;    // Target APCA for uniformity (0 = no target, just meet minimum)
 };
 
 // OKLCH Hue Reference Values (degrees):
@@ -100,63 +101,64 @@ const OklchSlotConstraint oklch_slot_constraints[16] = {
     {   0,   0, 1.00, 1.00, 0.00, 0.00, true,  255, 255, 255, -1,  0},  // 15: BR_WHITE (fixed)
 };
 
-// APCA pair constraints: {fg_index, bg_index, min_apca}
+// APCA pair constraints: {fg_index, bg_index, min_apca, target_apca}
+// target_apca > 0 enables uniformity optimization within groups
 const ApcaPairConstraint apca_pair_constraints[] = {
-    // Base colors on black (need APCA >= 40 for readable text)
-    {RED,        BLACK, 45.0},  // red on black
-    {GREEN,      BLACK, 50.0},  // green on black
-    {YELLOW,     BLACK, 50.0},  // yellow on black
-    {BLUE,       BLACK, 50.0},  // blue on black
-    {MAGENTA,    BLACK, 40.0},  // magenta on black
-    {CYAN,       BLACK, 40.0},  // cyan on black
-    {WHITE,      BLACK, 40.0},  // white on black
+    // Base colors on black - target 50 for uniformity (all should cluster around this value)
+    {RED,        BLACK, 60.0, 65.0},  // red on black
+    {GREEN,      BLACK, 60.0, 65.0},  // green on black
+    {YELLOW,     BLACK, 60.0, 65.0},  // yellow on black
+    {BLUE,       BLACK, 60.0, 65.0},  // blue on black
+    {MAGENTA,    BLACK, 60.0, 65.0},  // magenta on black
+    {CYAN,       BLACK, 60.0, 65.0},  // cyan on black
+    {WHITE,      BLACK, 75.0, 75.0},  // white on black
 
-    // Bright colors on black (need APCA >= 40)
-    {BR_RED,     BLACK, 75.0},  // br.red on black
-    {BR_GREEN,   BLACK, 75.0},  // br.green on black
-    {BR_YELLOW,  BLACK, 75.0},  // br.yellow on black
-    {BR_BLUE,    BLACK, 75.0},  // br.blue on black
-    {BR_MAGENTA, BLACK, 75.0},  // br.magenta on black
-    {BR_CYAN,    BLACK, 75.0},  // br.cyan on black
+    // Bright colors on black - target 80 for uniformity
+    {BR_RED,     BLACK, 90.0, 95.0},  // br.red on black
+    {BR_GREEN,   BLACK, 90.0, 95.0},  // br.green on black
+    {BR_YELLOW,  BLACK, 90.0, 95.0},  // br.yellow on black
+    {BR_BLUE,    BLACK, 90.0, 95.0},  // br.blue on black
+    {BR_MAGENTA, BLACK, 90.0, 95.0},  // br.magenta on black
+    {BR_CYAN,    BLACK, 90.0, 95.0},  // br.cyan on black
+    {BR_BLACK,   BLACK, 40.0, 40.0},  // br.black on black (no uniformity target - standalone)
 
-    // br.black on black (lower threshold - subtle visibility)
-    {BR_BLACK,   BLACK, 15.0},  // br.black on black
 
-    // Colors on cyan background (need APCA >= 20)
-    {BLACK,   CYAN, 20.0},  // black on cyan
-    {RED,     CYAN, 20.0},  // red on cyan
-    {GREEN,   CYAN, 20.0},  // green on cyan
-    {YELLOW,  CYAN, 20.0},  // yellow on cyan
-    {BLUE,    CYAN, 20.0},  // blue on cyan
-    {MAGENTA, CYAN, 20.0},  // magenta on cyan
-    {WHITE,   CYAN, 20.0},  // white on cyan
+    // // Colors on cyan background (no uniformity target)
+    // {BLACK,   CYAN, 20.0, 0.0},  // black on cyan
+    // {RED,     CYAN, 20.0, 0.0},  // red on cyan
+    // {GREEN,   CYAN, 20.0, 0.0},  // green on cyan
+    // {YELLOW,  CYAN, 20.0, 0.0},  // yellow on cyan
+    // {BLUE,    CYAN, 20.0, 0.0},  // blue on cyan
+    // {MAGENTA, CYAN, 20.0, 0.0},  // magenta on cyan
+    // {WHITE,   CYAN, 20.0, 0.0},  // white on cyan
 
-    // Colors on green background (need APCA >= 30)
-    {BLACK,   GREEN, 20.0},  // black on green
-    {RED,     GREEN, 20.0},  // red on green
-    {YELLOW,  GREEN, 20.0},  // yellow on green
-    {BLUE,    GREEN, 20.0},  // blue on green
-    {MAGENTA, GREEN, 20.0},  // magenta on green
-    {CYAN,    GREEN, 20.0},  // cyan on green
-    {WHITE,   GREEN, 30.0},  // white on green
+    // // Colors on green background (no uniformity target)
+    // {BLACK,   GREEN, 20.0, 0.0},  // black on green
+    // {RED,     GREEN, 20.0, 0.0},  // red on green
+    // {YELLOW,  GREEN, 20.0, 0.0},  // yellow on green
+    // {BLUE,    GREEN, 20.0, 0.0},  // blue on green
+    // {MAGENTA, GREEN, 20.0, 0.0},  // magenta on green
+    // {CYAN,    GREEN, 20.0, 0.0},  // cyan on green
+    {WHITE,   GREEN, 30.0, 0.0},  // white on green
+    {WHITE,   BLUE, 30.0, 0.0},  // white on green
 
-    // Colors on blue background (need APCA >= 30)
-    {BLACK,   BLUE, 20.0},  // black on blue
-    {RED,     BLUE, 20.0},  // red on blue
-    {GREEN,   BLUE, 20.0},  // green on blue
-    {YELLOW,  BLUE, 20.0},  // yellow on blue
-    {MAGENTA, BLUE, 20.0},  // magenta on blue
-    {CYAN,    BLUE, 20.0},  // cyan on blue
-    {WHITE,   BLUE, 20.0},  // white on blue
+    // // Colors on blue background (no uniformity target)
+    // {BLACK,   BLUE, 20.0, 0.0},  // black on blue
+    // {RED,     BLUE, 20.0, 0.0},  // red on blue
+    // {GREEN,   BLUE, 20.0, 0.0},  // green on blue
+    // {YELLOW,  BLUE, 20.0, 0.0},  // yellow on blue
+    // {MAGENTA, BLUE, 20.0, 0.0},  // magenta on blue
+    // {CYAN,    BLUE, 20.0, 0.0},  // cyan on blue
+    // {WHITE,   BLUE, 20.0, 0.0},  // white on blue
 
     // Bright on corresponding base color (need APCA >= 30)
-    // {BR_RED,     RED,     20.0},  // br.red on red
-    // {BR_GREEN,   GREEN,   20.0},  // br.green on green
-    // {BR_YELLOW,  YELLOW,  20.0},  // br.yellow on yellow
-    // {BR_BLUE,    BLUE,    20.0},  // br.blue on blue
-    // {BR_MAGENTA, MAGENTA, 20.0},  // br.magenta on magenta
-    // {BR_CYAN,    CYAN,    20.0},  // br.cyan on cyan
-    // {BR_WHITE,   WHITE,   20.0},  // br.white on white
+    // {BR_RED,     RED,     20.0, 0.0},  // br.red on red
+    // {BR_GREEN,   GREEN,   20.0, 0.0},  // br.green on green
+    // {BR_YELLOW,  YELLOW,  20.0, 0.0},  // br.yellow on yellow
+    // {BR_BLUE,    BLUE,    20.0, 0.0},  // br.blue on blue
+    // {BR_MAGENTA, MAGENTA, 20.0, 0.0},  // br.magenta on magenta
+    // {BR_CYAN,    CYAN,    20.0, 0.0},  // br.cyan on cyan
+    // {BR_WHITE,   WHITE,   20.0, 0.0},  // br.white on white
 };
 
 constexpr int APCA_CONSTRAINT_COUNT = sizeof(apca_pair_constraints) / sizeof(apca_pair_constraints[0]);
@@ -242,7 +244,7 @@ __global__ void evaluate_fitness(double* palettes, double* fitness, int n_palett
     }
 
     // =========================================================================
-    // CONSTRAINT 1: APCA pair constraints (hard requirements)
+    // CONSTRAINT 1: APCA pair constraints (hard requirements + uniformity)
     // =========================================================================
     for (int i = 0; i < d_apca_pair_count; i++) {
         ApcaPairConstraint p = d_apca_pairs[i];
@@ -255,8 +257,17 @@ __global__ void evaluate_fitness(double* palettes, double* fitness, int n_palett
         );
 
         if (apca >= p.min_apca) {
-            // Constraint met - reward with bonus for exceeding minimum
-            score += 100.0 + (apca - p.min_apca) * 5.0;
+            // Constraint met - base reward
+            score += 100.0;
+
+            if (p.target_apca > 0.0) {
+                // Uniformity mode: penalize deviation from target
+                double deviation = fabs(apca - p.target_apca);
+                score -= deviation * 3.0;
+            } else {
+                // No target: reward exceeding minimum (old behavior)
+                score += (apca - p.min_apca) * 5.0;
+            }
         } else {
             // Constraint violated - heavy penalty proportional to shortfall
             score -= (p.min_apca - apca) * 50.0;
