@@ -1,0 +1,27 @@
+# WCAG Pastel Dark v2.2 (OKLCH)
+#
+palette = 0=#000000
+palette = 1=#de000c
+palette = 2=#00732a
+palette = 3=#9f8c00
+palette = 4=#004cfe
+palette = 5=#c808ce
+palette = 6=#1a9b9c
+palette = 7=#bfbfbf
+palette = 8=#404040
+palette = 9=#ffb4a9
+palette = 10=#a8ffb4
+palette = 11=#fff4b4
+palette = 12=#b4cdff
+palette = 13=#ffb4ff
+palette = 14=#b4fffe
+palette = 15=#ffffff
+
+background = #000000
+foreground = #bfbfbf
+
+cursor-color = #fff4b4
+cursor-text = #000000
+
+selection-background = #004cfe
+selection-foreground = #ffffff

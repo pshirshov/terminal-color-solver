@@ -1,0 +1,7 @@
+color-optimizer
+color_test
+__pycache__
+color-optimizer*
+build*/
+build-test/
+.direnv

@@ -1,0 +1,27 @@
+# WCAG Pastel Dark v2.5 (Golden)
+#
+palette = 0=#000000
+palette = 1=#ff1d3a
+palette = 2=#009e25
+palette = 3=#c8a000
+palette = 4=#1767ff
+palette = 5=#c900d0
+palette = 6=#00909f
+palette = 7=#bfbfbf
+palette = 8=#404040
+palette = 9=#ffb4af
+palette = 10=#b4ffb4
+palette = 11=#ffffb4
+palette = 12=#b4cfff
+palette = 13=#ffb4ff
+palette = 14=#b4f4ff
+palette = 15=#ffffff
+
+background = #000000
+foreground = #bfbfbf
+
+cursor-color = #ffffb4
+cursor-text = #000000
+
+selection-background = #1767ff
+selection-foreground = #ffffff
