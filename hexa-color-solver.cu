@@ -91,7 +91,7 @@ const OklchSlotConstraint oklch_slot_constraints[16] = {
     {   0,   0, 0.75, 0.85, 0.00, 0.03, false,   0,   0,   0, -1,  0},  // 7: WHITE (neutral)
 
     // Bright colors (8-15)
-    {   0,   0, 0.35, 0.45, 0.00, 0.03, false,   0,   0,   0, -1,  0},  // 8: BR_BLACK (neutral)
+    {   0,   0, 0.50, 0.60, 0.00, 0.03, false,   0,   0,   0, -1,  0},  // 8: BR_BLACK (L≥0.50 for APCA≥40 on black)
     {  29,  25, 0.60, 0.85, 0.12, 0.30, false,   0,   0,   0,  1, 20},  // 9: BR_RED (base=RED)
     { 142,  30, 0.65, 0.90, 0.12, 0.28, false,   0,   0,   0,  2, 20},  // 10: BR_GREEN (base=GREEN)
     { 110,  25, 0.85, 0.98, 0.12, 0.22, false,   0,   0,   0,  3, 15},  // 11: BR_YELLOW (base=YELLOW)
@@ -105,7 +105,7 @@ const OklchSlotConstraint oklch_slot_constraints[16] = {
 // target_apca > 0 enables uniformity optimization within groups
 const ApcaPairConstraint apca_pair_constraints[] = {
     // Base colors on black - target 50 for uniformity (all should cluster around this value)
-    {RED,        BLACK, 60.0, 65.0},  // red on black
+    {RED,        BLACK, 50.0, 50.0},  // red on black
     {GREEN,      BLACK, 60.0, 65.0},  // green on black
     {YELLOW,     BLACK, 60.0, 65.0},  // yellow on black
     {BLUE,       BLACK, 60.0, 65.0},  // blue on black
@@ -114,12 +114,12 @@ const ApcaPairConstraint apca_pair_constraints[] = {
     {WHITE,      BLACK, 75.0, 75.0},  // white on black
 
     // Bright colors on black - target 80 for uniformity
-    {BR_RED,     BLACK, 90.0, 95.0},  // br.red on black
-    {BR_GREEN,   BLACK, 90.0, 95.0},  // br.green on black
-    {BR_YELLOW,  BLACK, 90.0, 95.0},  // br.yellow on black
-    {BR_BLUE,    BLACK, 90.0, 95.0},  // br.blue on black
-    {BR_MAGENTA, BLACK, 90.0, 95.0},  // br.magenta on black
-    {BR_CYAN,    BLACK, 90.0, 95.0},  // br.cyan on black
+    {BR_RED,     BLACK, 80.0, 80.0},  // br.red on black
+    {BR_GREEN,   BLACK, 80.0, 80.0},  // br.green on black
+    {BR_YELLOW,  BLACK, 80.0, 80.0},  // br.yellow on black
+    {BR_BLUE,    BLACK, 80.0, 80.0},  // br.blue on black
+    {BR_MAGENTA, BLACK, 80.0, 80.0},  // br.magenta on black
+    {BR_CYAN,    BLACK, 80.0, 80.0},  // br.cyan on black
     {BR_BLACK,   BLACK, 40.0, 40.0},  // br.black on black (no uniformity target - standalone)
 
 
@@ -139,8 +139,8 @@ const ApcaPairConstraint apca_pair_constraints[] = {
     // {BLUE,    GREEN, 20.0, 0.0},  // blue on green
     // {MAGENTA, GREEN, 20.0, 0.0},  // magenta on green
     // {CYAN,    GREEN, 20.0, 0.0},  // cyan on green
-    {WHITE,   GREEN, 30.0, 0.0},  // white on green
-    {WHITE,   BLUE, 30.0, 0.0},  // white on green
+    {WHITE,   GREEN, 40.0, 0.0},  // white on green
+    {WHITE,   BLUE, 40.0, 0.0},  // white on green
 
     // // Colors on blue background (no uniformity target)
     // {BLACK,   BLUE, 20.0, 0.0},  // black on blue
