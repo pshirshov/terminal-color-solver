@@ -33,7 +33,7 @@ for arg in "$@"; do
             echo
             echo "Options:"
             echo "  --rocm              Build for ROCm/HIP instead of CUDA"
-            echo "  --rebuild, -b       Force rebuild even if binary exists"
+            echo "  --rebuild, -b       Force rebuild (auto-rebuilds if sources changed)"
             echo "  --no-fm-pairs       Disable FM pairs constraints"
             echo "  --no-gb-exclusions  Disable green/blue exclusions"
             echo "  --help, -h          Show this help"
@@ -99,8 +99,28 @@ THEME_FILE="${3:-$THEMES_DIR/theme-$(date +%y%m%d-%H%M%S)}"
 echo "Output: $THEME_FILE"
 echo
 
+# Check if rebuild is needed
+needs_rebuild() {
+    [ ! -x "$BINARY" ] && return 0
+
+    # Source files to check
+    local sources=(
+        "$SCRIPT_DIR/hexa-color-solver.cu"
+        "$SCRIPT_DIR/color.cuh"
+        "$SCRIPT_DIR/output.hpp"
+        "$SCRIPT_DIR/CMakeLists.txt"
+        "$SCRIPT_DIR/flake.nix"
+    )
+
+    for src in "${sources[@]}"; do
+        [ -f "$src" ] && [ "$src" -nt "$BINARY" ] && return 0
+    done
+
+    return 1
+}
+
 # Build if needed
-if [ "$REBUILD" = true ] || [ ! -x "$BINARY" ]; then
+if [ "$REBUILD" = true ] || needs_rebuild; then
     echo "Building ($MODE)..."
     mkdir -p "$BUILD_DIR"
     cd "$BUILD_DIR"
@@ -116,7 +136,7 @@ if [ "$REBUILD" = true ] || [ ! -x "$BINARY" ]; then
     cd "$SCRIPT_DIR"
     echo
 else
-    echo "Binary exists, skipping build (use --rebuild to force)"
+    echo "Binary up-to-date, skipping build"
     echo
 fi
 
