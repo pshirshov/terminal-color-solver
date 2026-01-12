@@ -365,14 +365,111 @@ inline void print_palette_and_matrix(
     std::cout << std::endl;
 }
 
-inline void print_contrast_tables_side_by_side(
+// APCA-only version of FM pairs table
+inline ftxui::Element make_apca_contrast_table(
+    const std::string& title,
+    float apca_target,
+    float* palette,
+    const std::vector<ContrastPair>& pairs,
+    ColorRGB bg,
+    const std::string& bg_name
+) {
+    namespace f = ftxui;
+
+    std::vector<std::vector<f::Element>> rows;
+
+    rows.push_back({
+        f::text("Pair") | f::bold,
+        f::text("APCA") | f::bold
+    });
+
+    for (const auto& pair : pairs) {
+        ColorRGB fg(palette, pair.fg_index);
+        float apca = ::color::apca::contrast(fg.r, fg.g, fg.b, bg.r, bg.g, bg.b);
+        float abs_apca = fabsf(apca);
+        bool pass = abs_apca >= apca_target;
+
+        char apca_str[24];
+        snprintf(apca_str, sizeof(apca_str), "%s%6.1f", apca_status_symbol(apca), apca);
+
+        std::string pair_label = " " + pair.fg_name + " on " + bg_name + " ";
+
+        rows.push_back({
+            f::text(pair_label) | f::color(fg.to_color()) | f::bgcolor(bg.to_color()),
+            f::text(apca_str) | f::color(pass ? ftxui::Color::Green : ftxui::Color::Red)
+        });
+    }
+
+    auto table = f::Table(rows);
+    table.SelectAll().SeparatorVertical(f::LIGHT);
+    table.SelectRow(0).BorderBottom(f::LIGHT);
+
+    char header[128];
+    snprintf(header, sizeof(header), "%s on %s (APCA≥%.0f)",
+             title.c_str(), bg_name.c_str(), apca_target);
+
+    return f::vbox({
+        f::text(header) | f::bold,
+        f::separator(),
+        table.Render()
+    });
+}
+
+// APCA-only version of bright-on-regular table
+inline ftxui::Element make_apca_bright_on_regular_table(
     float* palette,
     const char** names,
-    float min_bright_on_regular,
-    float min_br_black_on_black,
-    float min_on_blue,
-    float min_on_green,
-    float min_on_cyan
+    float apca_target,
+    float apca_target_black
+) {
+    namespace f = ftxui;
+
+    std::vector<std::vector<f::Element>> rows;
+
+    rows.push_back({
+        f::text("Pair") | f::bold,
+        f::text("APCA") | f::bold
+    });
+
+    for (int i = 0; i <= 7; i++) {
+        ColorRGB reg(palette, i);
+        ColorRGB brt(palette, i + 8);
+        float target = (i == 0) ? apca_target_black : apca_target;
+
+        float apca = ::color::apca::contrast(brt.r, brt.g, brt.b, reg.r, reg.g, reg.b);
+        float abs_apca = fabsf(apca);
+        bool pass = abs_apca >= target;
+
+        char apca_str[24];
+        snprintf(apca_str, sizeof(apca_str), "%s%6.1f", apca_status_symbol(apca), apca);
+
+        std::string pair_label = std::string(" br.") + names[i] + " on " + names[i] + " ";
+
+        rows.push_back({
+            f::text(pair_label) | f::color(brt.to_color()) | f::bgcolor(reg.to_color()),
+            f::text(apca_str) | f::color(pass ? ftxui::Color::Green : ftxui::Color::Red)
+        });
+    }
+
+    auto table = f::Table(rows);
+    table.SelectAll().SeparatorVertical(f::LIGHT);
+    table.SelectRow(0).BorderBottom(f::LIGHT);
+
+    char header[128];
+    snprintf(header, sizeof(header), "Bright on Regular (APCA≥%.0f, br.black≥%.0f)",
+             apca_target, apca_target_black);
+
+    return f::vbox({
+        f::text(header) | f::bold,
+        f::separator(),
+        table.Render()
+    });
+}
+
+// Print FM pairs tables (APCA-focused)
+inline void print_fm_pairs_tables(
+    float* palette,
+    const char** names
 ) {
     namespace f = ftxui;
 
@@ -395,20 +492,27 @@ inline void print_contrast_tables_side_by_side(
         {4, "Blue"}, {5, "Magenta"}, {7, "White"}
     };
 
-    auto table1 = make_bright_on_regular_table(
-        palette, names, min_bright_on_regular, min_br_black_on_black
+    // APCA thresholds matching our constraints
+    const float APCA_BRIGHT_ON_REGULAR = 30.0f;
+    const float APCA_BR_BLACK_ON_BLACK = 15.0f;
+    const float APCA_ON_BLUE = 30.0f;
+    const float APCA_ON_GREEN = 30.0f;
+    const float APCA_ON_CYAN = 20.0f;
+
+    auto table1 = make_apca_bright_on_regular_table(
+        palette, names, APCA_BRIGHT_ON_REGULAR, APCA_BR_BLACK_ON_BLACK
     );
 
-    auto table2 = make_contrast_table(
-        "FM pairs", min_on_blue, 45.0f, palette, pairs_on_blue, blue, "blue"
+    auto table2 = make_apca_contrast_table(
+        "Colors", APCA_ON_BLUE, palette, pairs_on_blue, blue, "blue"
     );
 
-    auto table3 = make_contrast_table(
-        "FM pairs", min_on_green, 45.0f, palette, pairs_on_green, green, "green"
+    auto table3 = make_apca_contrast_table(
+        "Colors", APCA_ON_GREEN, palette, pairs_on_green, green, "green"
     );
 
-    auto table4 = make_contrast_table(
-        "FM pairs", min_on_cyan, 45.0f, palette, pairs_on_cyan, cyan, "cyan"
+    auto table4 = make_apca_contrast_table(
+        "Colors", APCA_ON_CYAN, palette, pairs_on_cyan, cyan, "cyan"
     );
 
     auto layout = f::hbox({
@@ -426,8 +530,7 @@ inline void print_contrast_tables_side_by_side(
     screen.Print();
     std::cout << std::endl;
 
-    // Symbol legend
-    std::cout << "WCAG: \033[36m★\033[0m≥7.0(AAA) \033[32m✓\033[0m≥4.5(AA) \033[33m~\033[0m≥3.0(A) \033[38;2;255;165;0m○\033[0m≥2.5 \033[38;2;255;100;100m·\033[0m≥2.0 \033[31m✗\033[0m<2.0" << std::endl;
+    // APCA legend
     std::cout << "APCA: \033[36m★\033[0m≥90 \033[32m✓\033[0m≥75(body) \033[33m~\033[0m≥60(large) \033[38;2;255;165;0m○\033[0m≥45(bold) \033[31m✗\033[0m<45" << std::endl;
 }
 

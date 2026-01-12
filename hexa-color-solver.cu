@@ -103,9 +103,9 @@ const OklchSlotConstraint oklch_slot_constraints[16] = {
 // APCA pair constraints: {fg_index, bg_index, min_apca}
 const ApcaPairConstraint apca_pair_constraints[] = {
     // Base colors on black (need APCA >= 40 for readable text)
-    {RED,        BLACK, 40.0f},  // red on black
-    {GREEN,      BLACK, 40.0f},  // green on black
-    {YELLOW,     BLACK, 40.0f},  // yellow on black
+    {RED,        BLACK, 45.0f},  // red on black
+    {GREEN,      BLACK, 30.0f},  // green on black
+    {YELLOW,     BLACK, 80.0f},  // yellow on black
     {BLUE,       BLACK, 40.0f},  // blue on black
     {MAGENTA,    BLACK, 40.0f},  // magenta on black
     {CYAN,       BLACK, 40.0f},  // cyan on black
@@ -114,7 +114,7 @@ const ApcaPairConstraint apca_pair_constraints[] = {
     // Bright colors on black (need APCA >= 40)
     {BR_RED,     BLACK, 40.0f},  // br.red on black
     {BR_GREEN,   BLACK, 40.0f},  // br.green on black
-    {BR_YELLOW,  BLACK, 40.0f},  // br.yellow on black
+    {BR_YELLOW,  BLACK, 100.0f},  // br.yellow on black
     {BR_BLUE,    BLACK, 40.0f},  // br.blue on black
     {BR_MAGENTA, BLACK, 40.0f},  // br.magenta on black
     {BR_CYAN,    BLACK, 40.0f},  // br.cyan on black
@@ -123,22 +123,22 @@ const ApcaPairConstraint apca_pair_constraints[] = {
     {BR_BLACK,   BLACK, 15.0f},  // br.black on black
 
     // Bright on corresponding base color (need APCA >= 30)
-    {BR_RED,     RED,     30.0f},  // br.red on red
-    {BR_GREEN,   GREEN,   30.0f},  // br.green on green
-    {BR_YELLOW,  YELLOW,  30.0f},  // br.yellow on yellow
-    {BR_BLUE,    BLUE,    30.0f},  // br.blue on blue
-    {BR_MAGENTA, MAGENTA, 30.0f},  // br.magenta on magenta
-    {BR_CYAN,    CYAN,    30.0f},  // br.cyan on cyan
-    {BR_WHITE,   WHITE,   30.0f},  // br.white on white
+    {BR_RED,     RED,     20.0f},  // br.red on red
+    {BR_GREEN,   GREEN,   20.0f},  // br.green on green
+    {BR_YELLOW,  YELLOW,  20.0f},  // br.yellow on yellow
+    {BR_BLUE,    BLUE,    20.0f},  // br.blue on blue
+    {BR_MAGENTA, MAGENTA, 20.0f},  // br.magenta on magenta
+    {BR_CYAN,    CYAN,    20.0f},  // br.cyan on cyan
+    {BR_WHITE,   WHITE,   20.0f},  // br.white on white
 
     // Colors on cyan background (need APCA >= 20)
-    {BLACK,   CYAN, 20.0f},  // black on cyan
-    {RED,     CYAN, 20.0f},  // red on cyan
-    {GREEN,   CYAN, 20.0f},  // green on cyan
-    {YELLOW,  CYAN, 20.0f},  // yellow on cyan
-    {BLUE,    CYAN, 20.0f},  // blue on cyan
-    {MAGENTA, CYAN, 20.0f},  // magenta on cyan
-    {WHITE,   CYAN, 20.0f},  // white on cyan
+    {BLACK,   CYAN, 30.0f},  // black on cyan
+    {RED,     CYAN, 30.0f},  // red on cyan
+    {GREEN,   CYAN, 30.0f},  // green on cyan
+    {YELLOW,  CYAN, 30.0f},  // yellow on cyan
+    {BLUE,    CYAN, 30.0f},  // blue on cyan
+    {MAGENTA, CYAN, 30.0f},  // magenta on cyan
+    {WHITE,   CYAN, 30.0f},  // white on cyan
 
     // Colors on green background (need APCA >= 30)
     {BLACK,   GREEN, 30.0f},  // black on green
@@ -150,13 +150,13 @@ const ApcaPairConstraint apca_pair_constraints[] = {
     {WHITE,   GREEN, 30.0f},  // white on green
 
     // Colors on blue background (need APCA >= 30)
-    {BLACK,   BLUE, 30.0f},  // black on blue
-    {RED,     BLUE, 30.0f},  // red on blue
-    {GREEN,   BLUE, 30.0f},  // green on blue
-    {YELLOW,  BLUE, 30.0f},  // yellow on blue
-    {MAGENTA, BLUE, 30.0f},  // magenta on blue
-    {CYAN,    BLUE, 30.0f},  // cyan on blue
-    {WHITE,   BLUE, 30.0f},  // white on blue
+    {BLACK,   BLUE, 20.0f},  // black on blue
+    {RED,     BLUE, 20.0f},  // red on blue
+    {GREEN,   BLUE, 20.0f},  // green on blue
+    {YELLOW,  BLUE, 20.0f},  // yellow on blue
+    {MAGENTA, BLUE, 20.0f},  // magenta on blue
+    {CYAN,    BLUE, 20.0f},  // cyan on blue
+    {WHITE,   BLUE, 20.0f},  // white on blue
 };
 
 constexpr int APCA_CONSTRAINT_COUNT = sizeof(apca_pair_constraints) / sizeof(apca_pair_constraints[0]);
@@ -489,10 +489,18 @@ __global__ void crossover_and_mutate(
  */
 void oklch_palette_to_rgb(float* oklch_palette, float* rgb_palette) {
     for (int i = 0; i < 16; i++) {
-        float L = oklch_palette[i * 3 + 0];
-        float C = oklch_palette[i * 3 + 1];
-        float H = oklch_palette[i * 3 + 2];
-        color::oklch_to_srgb(L, C, H, &rgb_palette[i * 3 + 0], &rgb_palette[i * 3 + 1], &rgb_palette[i * 3 + 2]);
+        const OklchSlotConstraint& c = oklch_slot_constraints[i];
+        if (c.fixed) {
+            // Use exact fixed RGB values to avoid OKLCH round-trip precision loss
+            rgb_palette[i * 3 + 0] = c.fixed_r;
+            rgb_palette[i * 3 + 1] = c.fixed_g;
+            rgb_palette[i * 3 + 2] = c.fixed_b;
+        } else {
+            float L = oklch_palette[i * 3 + 0];
+            float C = oklch_palette[i * 3 + 1];
+            float H = oklch_palette[i * 3 + 2];
+            color::oklch_to_srgb(L, C, H, &rgb_palette[i * 3 + 0], &rgb_palette[i * 3 + 1], &rgb_palette[i * 3 + 2]);
+        }
     }
 }
 
@@ -522,7 +530,12 @@ void print_color_demo(float* palette) {
     // Palette table and contrast matrix (using FTXUI)
     output::print_palette_and_matrix(palette, names);
 
-    printf("APCA Legend: \033[32m≥75 body\033[0m  \033[33m≥60 large\033[0m  \033[38;2;255;165;0m≥45 bold\033[0m  \033[31m<45 insufficient\033[0m\n\n");
+    printf("\n");
+
+    // FM pairs tables (bright on regular, colors on blue/green/cyan)
+    output::print_fm_pairs_tables(palette, names);
+
+    printf("\n");
 
     // APCA contrast check against black background
     printf("APCA Contrast (colors on black background):\n");
