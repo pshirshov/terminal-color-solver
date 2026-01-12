@@ -4,6 +4,9 @@ set -euo pipefail
 cd "$(dirname "$0")"
 SCRIPT_DIR="$(pwd)"
 
+# Save original arguments for re-exec
+ORIG_ARGS=("$@")
+
 # Parse arguments
 POSITIONAL=()
 USE_ROCM=false
@@ -49,17 +52,32 @@ done
 
 set -- "${POSITIONAL[@]+"${POSITIONAL[@]}"}"
 
+# Determine which nix shell we need
+if [ "$USE_ROCM" = true ]; then
+    REQUIRED_SHELL="rocm"
+else
+    REQUIRED_SHELL="cuda"
+fi
+
+# Re-exec under nix develop if not already in the right shell
+if [ "${HEXA_NIX_SHELL:-}" != "$REQUIRED_SHELL" ]; then
+    if [ "$USE_ROCM" = true ]; then
+        exec nix develop .#rocm -c env HEXA_NIX_SHELL=rocm "$0" "${ORIG_ARGS[@]}"
+    else
+        exec nix develop -c env HEXA_NIX_SHELL=cuda "$0" "${ORIG_ARGS[@]}"
+    fi
+fi
+
+# From here on, we're inside the correct nix shell
+
 GENERATIONS=${1:-5000}
 POPULATION=${2:-200000}
 
-# Set up paths based on mode
 if [ "$USE_ROCM" = true ]; then
     BUILD_DIR="build-rocm"
-    NIX_SHELL=".#rocm"
     MODE="ROCm (HIP)"
 else
     BUILD_DIR="build-cuda"
-    NIX_SHELL=""
     MODE="CUDA"
 fi
 
@@ -81,34 +99,22 @@ THEME_FILE="${3:-$THEMES_DIR/theme-$(date +%y%m%d-%H%M%S)}"
 echo "Output: $THEME_FILE"
 echo
 
-# Build function
-do_build() {
+# Build if needed
+if [ "$REBUILD" = true ] || [ ! -x "$BINARY" ]; then
     echo "Building ($MODE)..."
+    mkdir -p "$BUILD_DIR"
+    cd "$BUILD_DIR"
 
     if [ "$USE_ROCM" = true ]; then
-        rm -rf "$BUILD_DIR"
-        mkdir -p "$BUILD_DIR"
-        cd "$BUILD_DIR"
         cmake .. -DUSE_ROCM=ON -DCMAKE_CXX_COMPILER=hipcc \
             -DCMAKE_CXX_FLAGS="--rocm-device-lib-path=$HIP_DEVICE_LIB_PATH $NIX_CFLAGS_COMPILE"
     else
-        mkdir -p "$BUILD_DIR"
-        cd "$BUILD_DIR"
         cmake .. -DUSE_ROCM=OFF
     fi
 
     cmake --build . -j
     cd "$SCRIPT_DIR"
     echo
-}
-
-# Check if build is needed
-if [ "$REBUILD" = true ] || [ ! -x "$BINARY" ]; then
-    if [ -n "$NIX_SHELL" ]; then
-        nix develop "$NIX_SHELL" -c bash -c "$(declare -f do_build); do_build"
-    else
-        nix develop -c bash -c "$(declare -f do_build); do_build"
-    fi
 else
     echo "Binary exists, skipping build (use --rebuild to force)"
     echo
@@ -118,10 +124,4 @@ fi
 echo "Running optimizer..."
 echo
 
-if [ -n "$NIX_SHELL" ]; then
-    nix develop "$NIX_SHELL" -c "$BINARY" \
-        -g "$GENERATIONS" -p "$POPULATION" -o "$THEME_FILE" $NO_FM_PAIRS $NO_GB_EXCLUSIONS
-else
-    nix develop -c "$BINARY" \
-        -g "$GENERATIONS" -p "$POPULATION" -o "$THEME_FILE" $NO_FM_PAIRS $NO_GB_EXCLUSIONS
-fi
+"$BINARY" -g "$GENERATIONS" -p "$POPULATION" -o "$THEME_FILE" $NO_FM_PAIRS $NO_GB_EXCLUSIONS

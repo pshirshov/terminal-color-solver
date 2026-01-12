@@ -30,13 +30,19 @@ if(USE_ROCM)
     )
 
     add_executable(hexa-color-solver ${HIP_SOURCE})
-    
+
+    # Include source directory for headers (hipified source is in binary dir)
+    target_include_directories(hexa-color-solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
     # If CMAKE_CXX_COMPILER is hipcc, it handles most things.
     # But we need to link libraries explicitly if not added by the wrapper.
     target_link_libraries(hexa-color-solver PRIVATE rocrand hiprand ftxui::screen ftxui::dom)
 
-    # Optimization
-    target_compile_options(hexa-color-solver PRIVATE -O3)
+    # GPU architectures: gfx1100 (RDNA 3: RX 7000 series, W7000 series)
+    if(NOT DEFINED HIP_ARCHITECTURES)
+        set(HIP_ARCHITECTURES "gfx1100")
+    endif()
+    target_compile_options(hexa-color-solver PRIVATE -O3 --offload-arch=${HIP_ARCHITECTURES})
 
 else()
     message(STATUS "Building for CUDA...")

@@ -19,7 +19,7 @@
 
 #include <cmath>
 
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIP__)
 #define COLOR_FUNC __host__ __device__
 #else
 #define COLOR_FUNC

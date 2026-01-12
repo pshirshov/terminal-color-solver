@@ -267,12 +267,14 @@ inline ftxui::Element make_palette_table(
         // Combined WCAG|APCA columns
         for (const auto& bg : backgrounds) {
             if (i == bg.index) {
-                row.push_back(f::text("    ---    ") | f::bgcolor(bg.color.to_color()));
+                row.push_back(f::text("    ---     ") | f::bgcolor(bg.color.to_color()));
             } else {
                 float wcag = ::color::wcag2::contrast_ratio(col.r, col.g, col.b, bg.color.r, bg.color.g, bg.color.b);
                 float apca = ::color::apca::contrast(col.r, col.g, col.b, bg.color.r, bg.color.g, bg.color.b);
-                char combined_str[24];
-                snprintf(combined_str, sizeof(combined_str), " %.2f|%5.1f ", wcag, apca);
+                char combined_str[48];
+                snprintf(combined_str, sizeof(combined_str), "%s%5.2f|%s%5.1f",
+                         wcag_status_symbol(wcag), wcag,
+                         apca_status_symbol(apca), apca);
                 row.push_back(f::text(combined_str) | f::color(col.to_color()) | f::bgcolor(bg.color.to_color()));
             }
         }
