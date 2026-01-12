@@ -312,6 +312,67 @@ COLOR_FUNC inline float distance(float r1, float g1, float b1,
     return sqrtf(dL * dL + da * da + db * db);
 }
 
+/**
+ * Convert Oklab to linear RGB.
+ * Returns values that may be outside [0,1] if out of sRGB gamut.
+ */
+COLOR_FUNC inline void to_linear_rgb(Lab lab, float* lr, float* lg, float* lb) {
+    // Oklab to LMS' (inverse of final matrix)
+    float l_ = lab.L + 0.3963377774f * lab.a + 0.2158037573f * lab.b;
+    float m_ = lab.L - 0.1055613458f * lab.a - 0.0638541728f * lab.b;
+    float s_ = lab.L - 0.0894841775f * lab.a - 1.2914855480f * lab.b;
+
+    // LMS' to LMS (cube)
+    float l = l_ * l_ * l_;
+    float m = m_ * m_ * m_;
+    float s = s_ * s_ * s_;
+
+    // LMS to linear RGB (inverse of forward matrix)
+    *lr = +4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s;
+    *lg = -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s;
+    *lb = -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s;
+}
+
+/**
+ * Convert a single linear RGB channel to sRGB (0-255).
+ * Applies gamma correction and clamps to valid range.
+ */
+COLOR_FUNC inline float linear_to_srgb_channel(float linear) {
+    float v;
+    if (linear <= 0.0031308f) {
+        v = 12.92f * linear;
+    } else {
+        v = 1.055f * powf(linear, 1.0f / 2.4f) - 0.055f;
+    }
+    // Clamp to [0, 1] then scale to [0, 255]
+    if (v < 0.0f) v = 0.0f;
+    if (v > 1.0f) v = 1.0f;
+    return v * 255.0f;
+}
+
+/**
+ * Convert Oklab to sRGB (0-255).
+ * Clamps out-of-gamut colors.
+ */
+COLOR_FUNC inline void to_srgb(Lab lab, float* r, float* g, float* b) {
+    float lr, lg, lb;
+    to_linear_rgb(lab, &lr, &lg, &lb);
+    *r = linear_to_srgb_channel(lr);
+    *g = linear_to_srgb_channel(lg);
+    *b = linear_to_srgb_channel(lb);
+}
+
+/**
+ * Check if an Oklab color is within sRGB gamut.
+ */
+COLOR_FUNC inline bool is_in_gamut(Lab lab) {
+    float lr, lg, lb;
+    to_linear_rgb(lab, &lr, &lg, &lb);
+    return lr >= -0.0001f && lr <= 1.0001f &&
+           lg >= -0.0001f && lg <= 1.0001f &&
+           lb >= -0.0001f && lb <= 1.0001f;
+}
+
 } // namespace oklab
 
 // =============================================================================
@@ -388,6 +449,76 @@ COLOR_FUNC inline bool hue_similar(float r1, float g1, float b1,
     return hue_distance(lch1.H, lch2.H) <= tolerance;
 }
 
+/**
+ * Convert OKLCH to Oklab.
+ */
+COLOR_FUNC inline oklab::Lab to_oklab(float L, float C, float H) {
+    float h_rad = H * PI / 180.0f;
+    oklab::Lab lab;
+    lab.L = L;
+    lab.a = C * cosf(h_rad);
+    lab.b = C * sinf(h_rad);
+    return lab;
+}
+
+/**
+ * Convert OKLCH to sRGB (0-255).
+ * Clamps out-of-gamut colors.
+ */
+COLOR_FUNC inline void to_srgb(float L, float C, float H, float* r, float* g, float* b) {
+    oklab::Lab lab = to_oklab(L, C, H);
+    oklab::to_srgb(lab, r, g, b);
+}
+
+/**
+ * Check if an OKLCH color is within sRGB gamut.
+ */
+COLOR_FUNC inline bool is_in_gamut(float L, float C, float H) {
+    oklab::Lab lab = to_oklab(L, C, H);
+    return oklab::is_in_gamut(lab);
+}
+
+/**
+ * Find maximum chroma at given L and H that stays in sRGB gamut.
+ * Uses binary search for efficiency.
+ */
+COLOR_FUNC inline float max_chroma_in_gamut(float L, float H) {
+    float low = 0.0f;
+    float high = 0.5f;  // Max reasonable chroma
+
+    for (int i = 0; i < 16; i++) {  // Binary search iterations
+        float mid = (low + high) * 0.5f;
+        if (is_in_gamut(L, mid, H)) {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+    return low;
+}
+
+/**
+ * Normalize hue to [0, 360) range.
+ */
+COLOR_FUNC inline float normalize_hue(float h) {
+    while (h < 0.0f) h += 360.0f;
+    while (h >= 360.0f) h -= 360.0f;
+    return h;
+}
+
+/**
+ * Interpolate between two hues (circular interpolation).
+ * @param h1 First hue (degrees)
+ * @param h2 Second hue (degrees)
+ * @param t Interpolation factor (0 = h1, 1 = h2)
+ */
+COLOR_FUNC inline float lerp_hue(float h1, float h2, float t) {
+    float diff = h2 - h1;
+    if (diff > 180.0f) diff -= 360.0f;
+    if (diff < -180.0f) diff += 360.0f;
+    return normalize_hue(h1 + t * diff);
+}
+
 } // namespace oklch
 
 // =============================================================================
@@ -431,6 +562,19 @@ COLOR_FUNC inline float oklab_distance(float r1, float g1, float b1,
 
 COLOR_FUNC inline float hue_distance(float h1, float h2) {
     return oklch::hue_distance(h1, h2);
+}
+
+COLOR_FUNC inline void oklch_to_srgb(float L, float C, float H,
+                                      float* r, float* g, float* b) {
+    oklch::to_srgb(L, C, H, r, g, b);
+}
+
+COLOR_FUNC inline bool oklch_in_gamut(float L, float C, float H) {
+    return oklch::is_in_gamut(L, C, H);
+}
+
+COLOR_FUNC inline float oklch_max_chroma(float L, float H) {
+    return oklch::max_chroma_in_gamut(L, H);
 }
 
 } // namespace color

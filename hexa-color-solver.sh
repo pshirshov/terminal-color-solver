@@ -11,6 +11,7 @@ ORIG_ARGS=("$@")
 POSITIONAL=()
 USE_ROCM=false
 REBUILD=false
+USE_LEGACY=""
 NO_FM_PAIRS=""
 NO_GB_EXCLUSIONS=""
 
@@ -22,6 +23,9 @@ for arg in "$@"; do
         --rebuild|-b)
             REBUILD=true
             ;;
+        --legacy)
+            USE_LEGACY="--legacy"
+            ;;
         --no-fm-pairs)
             NO_FM_PAIRS="--no-fm-pairs"
             ;;
@@ -31,12 +35,18 @@ for arg in "$@"; do
         --help|-h)
             echo "Usage: $0 [OPTIONS] [GENERATIONS] [POPULATION] [THEME_FILE]"
             echo
+            echo "Hexa Color Solver v3.0 - Terminal color palette optimizer"
+            echo "Default mode: OKLCH color space + APCA contrast"
+            echo
             echo "Options:"
             echo "  --rocm              Build for ROCm/HIP instead of CUDA"
             echo "  --rebuild, -b       Force rebuild (auto-rebuilds if sources changed)"
+            echo "  --legacy            Use legacy RGB/WCAG mode (v2.5 behavior)"
+            echo "  --help, -h          Show this help"
+            echo
+            echo "Legacy mode options (only with --legacy):"
             echo "  --no-fm-pairs       Disable FM pairs constraints"
             echo "  --no-gb-exclusions  Disable green/blue exclusions"
-            echo "  --help, -h          Show this help"
             echo
             echo "Positional arguments:"
             echo "  GENERATIONS         Number of generations (default: 5000)"
@@ -83,11 +93,16 @@ fi
 
 BINARY="$SCRIPT_DIR/$BUILD_DIR/hexa-color-solver"
 
-echo "Hexa Color Solver"
-echo "Mode: $MODE"
+echo "Hexa Color Solver v3.0"
+echo "Backend: $MODE"
+if [ -n "$USE_LEGACY" ]; then
+    echo "Mode: Legacy (RGB/WCAG)"
+    [ -n "$NO_FM_PAIRS" ] && echo "  Flag: --no-fm-pairs (FM pairs disabled)"
+    [ -n "$NO_GB_EXCLUSIONS" ] && echo "  Flag: --no-gb-exclusions (G/B exclusions disabled)"
+else
+    echo "Mode: OKLCH + APCA (default)"
+fi
 echo "Parameters: generations=$GENERATIONS, population=$POPULATION"
-[ -n "$NO_FM_PAIRS" ] && echo "Flag: --no-fm-pairs (FM pairs disabled)"
-[ -n "$NO_GB_EXCLUSIONS" ] && echo "Flag: --no-gb-exclusions (G/B exclusions disabled)"
 
 # Theme output
 THEMES_DIR="$SCRIPT_DIR/themes"
@@ -144,4 +159,4 @@ fi
 echo "Running optimizer..."
 echo
 
-"$BINARY" -g "$GENERATIONS" -p "$POPULATION" -o "$THEME_FILE" $NO_FM_PAIRS $NO_GB_EXCLUSIONS
+"$BINARY" -g "$GENERATIONS" -p "$POPULATION" -o "$THEME_FILE" $USE_LEGACY $NO_FM_PAIRS $NO_GB_EXCLUSIONS
