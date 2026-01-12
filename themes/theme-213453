@@ -1,0 +1,27 @@
+# theme-213453
+#
+palette = 0=#000000
+palette = 1=#fe5b0e
+palette = 2=#19ab00
+palette = 3=#b4b400
+palette = 4=#0d73cc
+palette = 5=#d859fe
+palette = 6=#00d0e6
+palette = 7=#cecdcd
+palette = 8=#555555
+palette = 9=#ffbd92
+palette = 10=#4dffd2
+palette = 11=#f9ffbc
+palette = 12=#92d7ff
+palette = 13=#dcceff
+palette = 14=#68fefe
+palette = 15=#ffffff
+
+background = #000000
+foreground = #cecdcd
+
+cursor-color = #f9ffbc
+cursor-text = #000000
+
+selection-background = #0d73cc
+selection-foreground = #ffffff
