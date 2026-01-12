@@ -2,8 +2,15 @@
 """
 Terminal Theme Accessibility Analyzer
 
-Analyzes terminal color themes for WCAG contrast compliance and generates
+Analyzes terminal color themes for APCA contrast compliance and generates
 visual mockups to preview themes with 24-bit true colors.
+
+APCA (Accessible Perceptual Contrast Algorithm) levels:
+  ★ Lc ≥ 90: Excellent for body text
+  ✓ Lc ≥ 75: Minimum for body text
+  ~ Lc ≥ 60: Large text minimum
+  ○ Lc ≥ 45: Non-text, large bold minimum
+  ✗ Lc < 45: Fail for most uses
 
 Themes are loaded from ./themes/ directory in lexicographical order.
 
@@ -122,6 +129,81 @@ class ColorUtils:
         if diff > 180:
             diff = 360 - diff
         return diff
+
+    @staticmethod
+    def apca_contrast(fg_hex: str, bg_hex: str) -> float:
+        """Calculate APCA contrast (Lc value) between foreground and background.
+
+        Uses APCA 0.0.98G-4g constants (matching our C++ implementation).
+
+        Returns:
+            Lc value: positive for dark-on-light, negative for light-on-dark.
+            |Lc| >= 75: minimum for body text
+            |Lc| >= 90: preferred for body text
+        """
+        # APCA 0.0.98G-4g constants
+        # Exponents
+        normBG, normTXT = 0.56, 0.57
+        revBG, revTXT = 0.65, 0.62
+
+        # Scale and offset
+        scaleBoW, scaleWoB = 1.14, 1.14
+        loBoWoffset, loWoBoffset = 0.027, 0.027
+
+        # Clamps
+        loClip = 0.1
+        deltaYmin = 0.0005
+
+        # Black level soft clamp
+        blkThrs = 0.022
+        blkClmp = 1.414
+
+        # Luminance coefficients
+        sRco, sGco, sBco = 0.2126729, 0.7151522, 0.0721750
+
+        def srgb_to_linear(c: int) -> float:
+            return (c / 255.0) ** 2.4
+
+        def luminance(r: int, g: int, b: int) -> float:
+            return sRco * srgb_to_linear(r) + sGco * srgb_to_linear(g) + sBco * srgb_to_linear(b)
+
+        def soft_clamp(y: float) -> float:
+            if y > blkThrs:
+                return y
+            return y + (blkThrs - y) ** blkClmp
+
+        r_txt, g_txt, b_txt = ColorUtils.hex_to_rgb(fg_hex)
+        r_bg, g_bg, b_bg = ColorUtils.hex_to_rgb(bg_hex)
+
+        txtY = soft_clamp(luminance(r_txt, g_txt, b_txt))
+        bgY = soft_clamp(luminance(r_bg, g_bg, b_bg))
+
+        # Check for insufficient difference
+        deltaY = bgY - txtY
+        if abs(deltaY) < deltaYmin:
+            return 0.0
+
+        if bgY > txtY:
+            # Normal polarity: dark text on light background
+            sapc = (bgY ** normBG - txtY ** normTXT) * scaleBoW
+            if sapc < loClip:
+                output = 0.0
+            else:
+                output = sapc - loBoWoffset
+        else:
+            # Reverse polarity: light text on dark background
+            sapc = (bgY ** revBG - txtY ** revTXT) * scaleWoB
+            if sapc > -loClip:
+                output = 0.0
+            else:
+                output = sapc + loWoBoffset
+
+        return output * 100.0
+
+    @staticmethod
+    def apca_contrast_abs(fg_hex: str, bg_hex: str) -> float:
+        """Calculate absolute APCA contrast value."""
+        return abs(ColorUtils.apca_contrast(fg_hex, bg_hex))
 
     @staticmethod
     def relative_luminance(hex_color: str) -> float:
@@ -292,29 +374,37 @@ class ThemeRenderer:
         self.screenshot_manager = screenshot_manager
 
     @staticmethod
-    def get_contrast_color(cr: float) -> str:
-        if cr >= 4.5: return "green"
-        if cr >= 3.0: return "yellow"
+    def get_apca_color(lc: float) -> str:
+        """Get color based on APCA Lc value."""
+        abs_lc = abs(lc)
+        if abs_lc >= 90: return "cyan"
+        if abs_lc >= 75: return "green"
+        if abs_lc >= 60: return "yellow"
+        if abs_lc >= 45: return "bright_yellow"
         return "red"
 
     @staticmethod
-    def get_status_icon(cr: float) -> str:
-        if cr >= 4.5: return "[green]✓[/]"
-        if cr >= 3.0: return "[yellow]~[/]"
+    def get_apca_icon(lc: float) -> str:
+        """Get status icon based on APCA Lc value."""
+        abs_lc = abs(lc)
+        if abs_lc >= 90: return "[cyan]★[/]"
+        if abs_lc >= 75: return "[green]✓[/]"
+        if abs_lc >= 60: return "[yellow]~[/]"
+        if abs_lc >= 45: return "[bright_yellow]○[/]"
         return "[red]✗[/]"
 
     def _create_contrast_cell(self, text: str, fg: str, bg: str) -> Tuple[Text, str, str]:
-        """Create a styled text cell with contrast info."""
-        cr = ColorUtils.contrast_ratio(fg, bg)
+        """Create a styled text cell with APCA contrast info."""
+        lc = ColorUtils.apca_contrast(fg, bg)
         fg_rgb = ColorUtils.hex_to_rgb(fg)
         bg_rgb = ColorUtils.hex_to_rgb(bg)
-        
+
         styled = Text(text, style=Style(
             color=f"rgb({fg_rgb[0]},{fg_rgb[1]},{fg_rgb[2]})",
             bgcolor=f"rgb({bg_rgb[0]},{bg_rgb[1]},{bg_rgb[2]})"
         ))
-        
-        return styled, f"[{self.get_contrast_color(cr)}]{cr:.1f}[/]", self.get_status_icon(cr)
+
+        return styled, f"[{self.get_apca_color(lc)}]{lc:.0f}[/]", self.get_apca_icon(lc)
 
     def create_palette_table(self, theme: Theme, edit_state: Optional[EditState] = None) -> Table:
         colors = edit_state.colors if edit_state and edit_state.colors else theme.colors
@@ -326,7 +416,7 @@ class ThemeRenderer:
         table.add_column("Name", width=10)
         table.add_column("Hex", width=9)
         table.add_column("", width=6)  # Swatch
-        table.add_column("CR", width=5)
+        table.add_column("Lc", width=5)
         table.add_column("", width=2)  # Status
 
         for i in range(16):
@@ -344,50 +434,50 @@ class ThemeRenderer:
                 display_hex = color
                 r, g, b = ColorUtils.hex_to_rgb(color)
 
-            cr = ColorUtils.contrast_ratio(color, bg_color)
+            lc = ColorUtils.apca_contrast(color, bg_color)
             swatch = Text("      ", style=Style(bgcolor=f"rgb({r},{g},{b})"))
-            
-            cr_color = self.get_contrast_color(cr)
-            status = self.get_status_icon(cr)
+
+            lc_color = self.get_apca_color(lc)
+            status = self.get_apca_icon(lc)
 
             if i == 0:
-                cr_str = "---"
+                lc_str = "---"
                 status = ""
             else:
-                cr_str = f"[{cr_color}]{cr:.1f}[/]"
+                lc_str = f"[{lc_color}]{lc:.0f}[/]"
 
             row_style = "reverse" if is_selected else None
             table.add_row(
-                str(i), COLOR_NAMES_LONG[i], display_hex, swatch, cr_str, status, style=row_style
+                str(i), COLOR_NAMES_LONG[i], display_hex, swatch, lc_str, status, style=row_style
             )
         return table
 
     def create_constraint_table(self, theme: Theme) -> Table:
         table = Table(title="Constraints", box=None, padding=(0, 1))
         table.add_column("Color", width=7)
-        table.add_column("CR", width=5)
+        table.add_column("Lc", width=5)
         table.add_column("", width=4)
 
         bg = theme.colors[0]
         # Base colors (1-6)
-        base_ratios = []
+        base_lcs = []
         for i in range(1, 7):
-            cr = ColorUtils.contrast_ratio(theme.colors[i], bg)
-            base_ratios.append(cr)
-            color = self.get_contrast_color(cr)
-            status = self.get_status_icon(cr)
-            table.add_row(COLOR_NAMES[i], f"[{color}]{cr:.1f}[/]", status)
+            lc = ColorUtils.apca_contrast(theme.colors[i], bg)
+            base_lcs.append(abs(lc))
+            color = self.get_apca_color(lc)
+            status = self.get_apca_icon(lc)
+            table.add_row(COLOR_NAMES[i], f"[{color}]{lc:.0f}[/]", status)
 
-        min_base = min(base_ratios) if base_ratios else 0
-        min_color = self.get_contrast_color(min_base)
+        min_base = min(base_lcs) if base_lcs else 0
+        min_color = self.get_apca_color(min_base)
         table.add_row("", "", "")
-        table.add_row("[dim]min[/]", f"[{min_color}]{min_base:.1f}[/]", "")
+        table.add_row("[dim]min[/]", f"[{min_color}]{min_base:.0f}[/]", "")
         return table
 
     def create_bright_table(self, theme: Theme) -> Table:
         table = Table(title="Bright/Reg", box=None, padding=(0, 1))
         table.add_column("Pair", width=18)
-        table.add_column("CR", width=5)
+        table.add_column("Lc", width=5)
         table.add_column("", width=2)
 
         pairs = [(8, 0)] + [(i + 8, i) for i in range(1, 7)] + [(15, 7)]
@@ -395,20 +485,20 @@ class ThemeRenderer:
         for bright_idx, base_idx in pairs:
             base = theme.colors[base_idx]
             bright = theme.colors[bright_idx]
-            
+
             pair_name = f" {COLOR_NAMES[bright_idx]} on {COLOR_NAMES[base_idx]} "
-            styled, cr_str, status = self._create_contrast_cell(pair_name, bright, base)
-            table.add_row(styled, cr_str, status)
+            styled, lc_str, status = self._create_contrast_cell(pair_name, bright, base)
+            table.add_row(styled, lc_str, status)
 
         return table
 
     def create_fm_pairs_table(self, theme: Theme) -> Table:
         table = Table(title="FM Pairs", box=None, padding=(0, 1))
         table.add_column("On Blue", width=18)
-        table.add_column("CR", width=5)
+        table.add_column("Lc", width=5)
         table.add_column("", width=2)
         table.add_column("On Green", width=18)
-        table.add_column("CR", width=5)
+        table.add_column("Lc", width=5)
         table.add_column("", width=2)
 
         on_blue_idxs = [7, 3, 5, 6, 2, 1]
@@ -420,15 +510,15 @@ class ThemeRenderer:
             fg = theme.colors[on_blue_idxs[i]]
             bg = theme.colors[4]
             name = f" {COLOR_NAMES[on_blue_idxs[i]]} on blue "
-            styled, cr_str, status = self._create_contrast_cell(name, fg, bg)
-            row.extend([styled, cr_str, status])
+            styled, lc_str, status = self._create_contrast_cell(name, fg, bg)
+            row.extend([styled, lc_str, status])
 
             # Green column
             fg = theme.colors[on_green_idxs[i]]
             bg = theme.colors[2]
             name = f" {COLOR_NAMES[on_green_idxs[i]]} on green "
-            styled, cr_str, status = self._create_contrast_cell(name, fg, bg)
-            row.extend([styled, cr_str, status])
+            styled, lc_str, status = self._create_contrast_cell(name, fg, bg)
+            row.extend([styled, lc_str, status])
 
             table.add_row(*row)
         return table

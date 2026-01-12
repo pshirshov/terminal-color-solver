@@ -51,21 +51,21 @@ enum ColorIndex {
 
 // Slot constraint in OKLCH space
 struct OklchSlotConstraint {
-    float target_hue;      // Target hue in degrees (0-360)
-    float hue_tolerance;   // Allowed hue deviation (+/- degrees)
-    float min_L, max_L;    // Lightness range (0-1)
-    float min_C, max_C;    // Chroma range (0-~0.4)
+    double target_hue;      // Target hue in degrees (0-360)
+    double hue_tolerance;   // Allowed hue deviation (+/- degrees)
+    double min_L, max_L;    // Lightness range (0-1)
+    double min_C, max_C;    // Chroma range (0-~0.4)
     bool fixed;            // Is this a fixed RGB color?
-    float fixed_r, fixed_g, fixed_b;  // Fixed RGB values (0-255)
+    double fixed_r, fixed_g, fixed_b;  // Fixed RGB values (0-255)
     int8_t base_slot;      // For bright colors: base slot index (-1 if none)
-    float max_hue_drift;   // Max hue deviation from base color (degrees, 0 = unlimited)
+    double max_hue_drift;   // Max hue deviation from base color (degrees, 0 = unlimited)
 };
 
 // APCA pair constraint
 struct ApcaPairConstraint {
     int8_t fg_index;       // Foreground color index (0-15)
     int8_t bg_index;       // Background color index (0-15)
-    float min_apca;        // Minimum APCA contrast (absolute value)
+    double min_apca;        // Minimum APCA contrast (absolute value)
 };
 
 // OKLCH Hue Reference Values (degrees):
@@ -103,60 +103,60 @@ const OklchSlotConstraint oklch_slot_constraints[16] = {
 // APCA pair constraints: {fg_index, bg_index, min_apca}
 const ApcaPairConstraint apca_pair_constraints[] = {
     // Base colors on black (need APCA >= 40 for readable text)
-    {RED,        BLACK, 45.0f},  // red on black
-    {GREEN,      BLACK, 30.0f},  // green on black
-    {YELLOW,     BLACK, 80.0f},  // yellow on black
-    {BLUE,       BLACK, 40.0f},  // blue on black
-    {MAGENTA,    BLACK, 40.0f},  // magenta on black
-    {CYAN,       BLACK, 40.0f},  // cyan on black
-    {WHITE,      BLACK, 40.0f},  // white on black
+    {RED,        BLACK, 45.0},  // red on black
+    {GREEN,      BLACK, 50.0},  // green on black
+    {YELLOW,     BLACK, 50.0},  // yellow on black
+    {BLUE,       BLACK, 50.0},  // blue on black
+    {MAGENTA,    BLACK, 40.0},  // magenta on black
+    {CYAN,       BLACK, 40.0},  // cyan on black
+    {WHITE,      BLACK, 40.0},  // white on black
 
     // Bright colors on black (need APCA >= 40)
-    {BR_RED,     BLACK, 40.0f},  // br.red on black
-    {BR_GREEN,   BLACK, 40.0f},  // br.green on black
-    {BR_YELLOW,  BLACK, 100.0f},  // br.yellow on black
-    {BR_BLUE,    BLACK, 40.0f},  // br.blue on black
-    {BR_MAGENTA, BLACK, 40.0f},  // br.magenta on black
-    {BR_CYAN,    BLACK, 40.0f},  // br.cyan on black
+    {BR_RED,     BLACK, 75.0},  // br.red on black
+    {BR_GREEN,   BLACK, 75.0},  // br.green on black
+    {BR_YELLOW,  BLACK, 75.0},  // br.yellow on black
+    {BR_BLUE,    BLACK, 75.0},  // br.blue on black
+    {BR_MAGENTA, BLACK, 75.0},  // br.magenta on black
+    {BR_CYAN,    BLACK, 75.0},  // br.cyan on black
 
     // br.black on black (lower threshold - subtle visibility)
-    {BR_BLACK,   BLACK, 15.0f},  // br.black on black
-
-    // Bright on corresponding base color (need APCA >= 30)
-    {BR_RED,     RED,     20.0f},  // br.red on red
-    {BR_GREEN,   GREEN,   20.0f},  // br.green on green
-    {BR_YELLOW,  YELLOW,  20.0f},  // br.yellow on yellow
-    {BR_BLUE,    BLUE,    20.0f},  // br.blue on blue
-    {BR_MAGENTA, MAGENTA, 20.0f},  // br.magenta on magenta
-    {BR_CYAN,    CYAN,    20.0f},  // br.cyan on cyan
-    {BR_WHITE,   WHITE,   20.0f},  // br.white on white
+    {BR_BLACK,   BLACK, 15.0},  // br.black on black
 
     // Colors on cyan background (need APCA >= 20)
-    {BLACK,   CYAN, 30.0f},  // black on cyan
-    {RED,     CYAN, 30.0f},  // red on cyan
-    {GREEN,   CYAN, 30.0f},  // green on cyan
-    {YELLOW,  CYAN, 30.0f},  // yellow on cyan
-    {BLUE,    CYAN, 30.0f},  // blue on cyan
-    {MAGENTA, CYAN, 30.0f},  // magenta on cyan
-    {WHITE,   CYAN, 30.0f},  // white on cyan
+    {BLACK,   CYAN, 20.0},  // black on cyan
+    {RED,     CYAN, 20.0},  // red on cyan
+    {GREEN,   CYAN, 20.0},  // green on cyan
+    {YELLOW,  CYAN, 20.0},  // yellow on cyan
+    {BLUE,    CYAN, 20.0},  // blue on cyan
+    {MAGENTA, CYAN, 20.0},  // magenta on cyan
+    {WHITE,   CYAN, 20.0},  // white on cyan
 
     // Colors on green background (need APCA >= 30)
-    {BLACK,   GREEN, 30.0f},  // black on green
-    {RED,     GREEN, 30.0f},  // red on green
-    {YELLOW,  GREEN, 30.0f},  // yellow on green
-    {BLUE,    GREEN, 30.0f},  // blue on green
-    {MAGENTA, GREEN, 30.0f},  // magenta on green
-    {CYAN,    GREEN, 30.0f},  // cyan on green
-    {WHITE,   GREEN, 30.0f},  // white on green
+    {BLACK,   GREEN, 20.0},  // black on green
+    {RED,     GREEN, 20.0},  // red on green
+    {YELLOW,  GREEN, 20.0},  // yellow on green
+    {BLUE,    GREEN, 20.0},  // blue on green
+    {MAGENTA, GREEN, 20.0},  // magenta on green
+    {CYAN,    GREEN, 20.0},  // cyan on green
+    {WHITE,   GREEN, 30.0},  // white on green
 
     // Colors on blue background (need APCA >= 30)
-    {BLACK,   BLUE, 20.0f},  // black on blue
-    {RED,     BLUE, 20.0f},  // red on blue
-    {GREEN,   BLUE, 20.0f},  // green on blue
-    {YELLOW,  BLUE, 20.0f},  // yellow on blue
-    {MAGENTA, BLUE, 20.0f},  // magenta on blue
-    {CYAN,    BLUE, 20.0f},  // cyan on blue
-    {WHITE,   BLUE, 20.0f},  // white on blue
+    {BLACK,   BLUE, 20.0},  // black on blue
+    {RED,     BLUE, 20.0},  // red on blue
+    {GREEN,   BLUE, 20.0},  // green on blue
+    {YELLOW,  BLUE, 20.0},  // yellow on blue
+    {MAGENTA, BLUE, 20.0},  // magenta on blue
+    {CYAN,    BLUE, 20.0},  // cyan on blue
+    {WHITE,   BLUE, 20.0},  // white on blue
+
+    // Bright on corresponding base color (need APCA >= 30)
+    // {BR_RED,     RED,     20.0},  // br.red on red
+    // {BR_GREEN,   GREEN,   20.0},  // br.green on green
+    // {BR_YELLOW,  YELLOW,  20.0},  // br.yellow on yellow
+    // {BR_BLUE,    BLUE,    20.0},  // br.blue on blue
+    // {BR_MAGENTA, MAGENTA, 20.0},  // br.magenta on magenta
+    // {BR_CYAN,    CYAN,    20.0},  // br.cyan on cyan
+    // {BR_WHITE,   WHITE,   20.0},  // br.white on white
 };
 
 constexpr int APCA_CONSTRAINT_COUNT = sizeof(apca_pair_constraints) / sizeof(apca_pair_constraints[0]);
@@ -182,7 +182,7 @@ __global__ void init_curand(curandState* states, unsigned long seed, int n) {
  * Generates random L, C, H values within slot constraints.
  * Clamps chroma to stay in sRGB gamut.
  */
-__global__ void init_population(float* palettes, curandState* states, int n_palettes) {
+__global__ void init_population(double* palettes, curandState* states, int n_palettes) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= n_palettes) return;
 
@@ -194,23 +194,23 @@ __global__ void init_population(float* palettes, curandState* states, int n_pale
 
         if (c.fixed) {
             // Fixed RGB color - convert to OKLCH for storage
-            float L, C, H;
+            double L, C, H;
             color::rgb_to_oklch(c.fixed_r, c.fixed_g, c.fixed_b, &L, &C, &H);
             palettes[base + 0] = L;
             palettes[base + 1] = C;
             palettes[base + 2] = H;
         } else {
             // Random OKLCH within constraints
-            float L = c.min_L + curand_uniform(&localState) * (c.max_L - c.min_L);
-            float H = c.target_hue + (curand_uniform(&localState) - 0.5f) * 2.0f * c.hue_tolerance;
+            double L = c.min_L + (double)curand_uniform(&localState) * (c.max_L - c.min_L);
+            double H = c.target_hue + ((double)curand_uniform(&localState) - 0.5) * 2.0 * c.hue_tolerance;
             H = color::oklch::normalize_hue(H);
 
             // Determine chroma range, clamped to gamut
-            float max_C = color::oklch_max_chroma(L, H);
-            float C_min = fminf(c.min_C, max_C);
-            float C_max = fminf(c.max_C, max_C);
+            double max_C = color::oklch_max_chroma(L, H);
+            double C_min = fmin(c.min_C, max_C);
+            double C_max = fmin(c.max_C, max_C);
 
-            float C = C_min + curand_uniform(&localState) * (C_max - C_min);
+            double C = C_min + (double)curand_uniform(&localState) * (C_max - C_min);
 
             palettes[base + 0] = L;
             palettes[base + 1] = C;
@@ -225,19 +225,19 @@ __global__ void init_population(float* palettes, curandState* states, int n_pale
  * Evaluate fitness using APCA constraints and OKLCH perceptual metrics.
  * Palettes are in OKLCH space, converted to RGB for APCA evaluation.
  */
-__global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes) {
+__global__ void evaluate_fitness(double* palettes, double* fitness, int n_palettes) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= n_palettes) return;
 
-    float score = 0.0f;
+    double score = 0.0;
     int base = idx * 16 * 3;
 
     // Convert OKLCH palette to RGB (cache for reuse)
-    float rgb[16][3];
+    double rgb[16][3];
     for (int i = 0; i < 16; i++) {
-        float L = palettes[base + i * 3 + 0];
-        float C = palettes[base + i * 3 + 1];
-        float H = palettes[base + i * 3 + 2];
+        double L = palettes[base + i * 3 + 0];
+        double C = palettes[base + i * 3 + 1];
+        double H = palettes[base + i * 3 + 2];
         color::oklch_to_srgb(L, C, H, &rgb[i][0], &rgb[i][1], &rgb[i][2]);
     }
 
@@ -249,17 +249,17 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
         int fg = p.fg_index;
         int bg = p.bg_index;
 
-        float apca = color::apca::contrast_abs(
+        double apca = color::apca::contrast_abs(
             rgb[fg][0], rgb[fg][1], rgb[fg][2],
             rgb[bg][0], rgb[bg][1], rgb[bg][2]
         );
 
         if (apca >= p.min_apca) {
             // Constraint met - reward with bonus for exceeding minimum
-            score += 100.0f + (apca - p.min_apca) * 5.0f;
+            score += 100.0 + (apca - p.min_apca) * 5.0;
         } else {
             // Constraint violated - heavy penalty proportional to shortfall
-            score -= (p.min_apca - apca) * 50.0f;
+            score -= (p.min_apca - apca) * 50.0;
         }
     }
 
@@ -268,16 +268,16 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
     // =========================================================================
     for (int slot = 8; slot <= 14; slot++) {
         OklchSlotConstraint c = d_oklch_slots[slot];
-        if (c.base_slot < 0 || c.max_hue_drift <= 0.0f) continue;
+        if (c.base_slot < 0 || c.max_hue_drift <= 0.0) continue;
 
-        float H_bright = palettes[base + slot * 3 + 2];
-        float H_base = palettes[base + c.base_slot * 3 + 2];
+        double H_bright = palettes[base + slot * 3 + 2];
+        double H_base = palettes[base + c.base_slot * 3 + 2];
 
-        float hdist = color::hue_distance(H_bright, H_base);
+        double hdist = color::hue_distance(H_bright, H_base);
         if (hdist <= c.max_hue_drift) {
-            score += 30.0f;  // Bonus for matching hue
+            score += 30.0;  // Bonus for matching hue
         } else {
-            score -= (hdist - c.max_hue_drift) * 5.0f;  // Penalty for drift
+            score -= (hdist - c.max_hue_drift) * 5.0;  // Penalty for drift
         }
     }
 
@@ -285,12 +285,12 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
     // CONSTRAINT 3: Gamut validity
     // =========================================================================
     for (int i = 0; i < 16; i++) {
-        float L = palettes[base + i * 3 + 0];
-        float C = palettes[base + i * 3 + 1];
-        float H = palettes[base + i * 3 + 2];
+        double L = palettes[base + i * 3 + 0];
+        double C = palettes[base + i * 3 + 1];
+        double H = palettes[base + i * 3 + 2];
 
         if (!color::oklch_in_gamut(L, C, H)) {
-            score -= 500.0f;  // Heavy penalty for out-of-gamut
+            score -= 500.0;  // Heavy penalty for out-of-gamut
         }
     }
 
@@ -299,15 +299,15 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
     // Reward evenly spaced hues on the color wheel
     // =========================================================================
     {
-        float hues[6];
+        double hues[6];
         for (int i = 0; i < 6; i++) {
             hues[i] = palettes[base + (i + 1) * 3 + 2];
         }
 
-        float min_hue_dist = 360.0f;
+        double min_hue_dist = 360.0;
         for (int i = 0; i < 6; i++) {
             for (int j = i + 1; j < 6; j++) {
-                float hdist = color::hue_distance(hues[i], hues[j]);
+                double hdist = color::hue_distance(hues[i], hues[j]);
                 if (hdist < min_hue_dist) {
                     min_hue_dist = hdist;
                 }
@@ -315,10 +315,10 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
         }
 
         // Ideal minimum spacing for 6 colors is 60° but we accept 40°
-        if (min_hue_dist >= 40.0f) {
-            score += min_hue_dist * 2.0f;
+        if (min_hue_dist >= 40.0) {
+            score += min_hue_dist * 2.0;
         } else {
-            score -= (40.0f - min_hue_dist) * 5.0f;
+            score -= (40.0 - min_hue_dist) * 5.0;
         }
     }
 
@@ -326,18 +326,18 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
     // BONUS 2: Chroma (prefer more saturated colors)
     // =========================================================================
     for (int i = 1; i <= 6; i++) {  // Base colors only
-        float C = palettes[base + i * 3 + 1];
-        score += C * 50.0f;  // Small bonus for saturation
+        double C = palettes[base + i * 3 + 1];
+        score += C * 50.0;  // Small bonus for saturation
     }
 
     // =========================================================================
     // BONUS 3: Perceptual distance (Oklab) between base colors
     // =========================================================================
     {
-        float min_dist = 1000.0f;
+        double min_dist = 1000.0;
         for (int i = 1; i <= 7; i++) {
             for (int j = i + 1; j <= 7; j++) {
-                float dist = color::oklab_distance(
+                double dist = color::oklab_distance(
                     rgb[i][0], rgb[i][1], rgb[i][2],
                     rgb[j][0], rgb[j][1], rgb[j][2]
                 );
@@ -348,10 +348,10 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
         }
 
         // Reward good separation (0.15 is noticeable difference)
-        if (min_dist >= 0.15f) {
-            score += min_dist * 100.0f;
+        if (min_dist >= 0.15) {
+            score += min_dist * 100.0;
         } else {
-            score -= (0.15f - min_dist) * 300.0f;
+            score -= (0.15 - min_dist) * 300.0;
         }
     }
 
@@ -362,12 +362,12 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
     for (int bg = 0; bg < 8; bg++) {
         for (int fg = 0; fg < 16; fg++) {
             if (fg == bg) continue;
-            float apca = color::apca::contrast_abs(
+            double apca = color::apca::contrast_abs(
                 rgb[fg][0], rgb[fg][1], rgb[fg][2],
                 rgb[bg][0], rgb[bg][1], rgb[bg][2]
             );
-            if (apca >= 40.0f) {
-                score += 1.0f;  // Small bonus for readable pairs
+            if (apca >= 40.0) {
+                score += 1.0;  // Small bonus for readable pairs
             }
         }
     }
@@ -380,9 +380,9 @@ __global__ void evaluate_fitness(float* palettes, float* fitness, int n_palettes
  * Uses circular interpolation for hue.
  */
 __global__ void crossover_and_mutate(
-    float* old_pop, float* new_pop, float* fitness,
+    double* old_pop, double* new_pop, double* fitness,
     int* elite_indices, int elite_count,
-    curandState* states, float mutation_rate, int n_palettes
+    curandState* states, double mutation_rate, int n_palettes
 ) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= n_palettes) return;
@@ -402,8 +402,8 @@ __global__ void crossover_and_mutate(
     }
 
     // Tournament selection for parents
-    int p1_idx = elite_indices[(int)(curand_uniform(&localState) * elite_count)];
-    int p2_idx = elite_indices[(int)(curand_uniform(&localState) * elite_count)];
+    int p1_idx = elite_indices[(int)((double)curand_uniform(&localState) * elite_count)];
+    int p2_idx = elite_indices[(int)((double)curand_uniform(&localState) * elite_count)];
 
     int p1_base = p1_idx * 16 * 3;
     int p2_base = p2_idx * 16 * 3;
@@ -415,63 +415,63 @@ __global__ void crossover_and_mutate(
 
         if (c.fixed) {
             // Fixed color - convert from RGB
-            float L, C, H;
+            double L, C, H;
             color::rgb_to_oklch(c.fixed_r, c.fixed_g, c.fixed_b, &L, &C, &H);
             new_pop[new_base + offset + 0] = L;
             new_pop[new_base + offset + 1] = C;
             new_pop[new_base + offset + 2] = H;
         } else {
             // Crossover: blend or select
-            float L1 = old_pop[p1_base + offset + 0];
-            float C1 = old_pop[p1_base + offset + 1];
-            float H1 = old_pop[p1_base + offset + 2];
-            float L2 = old_pop[p2_base + offset + 0];
-            float C2 = old_pop[p2_base + offset + 1];
-            float H2 = old_pop[p2_base + offset + 2];
+            double L1 = old_pop[p1_base + offset + 0];
+            double C1 = old_pop[p1_base + offset + 1];
+            double H1 = old_pop[p1_base + offset + 2];
+            double L2 = old_pop[p2_base + offset + 0];
+            double C2 = old_pop[p2_base + offset + 1];
+            double H2 = old_pop[p2_base + offset + 2];
 
-            float t = curand_uniform(&localState);
-            float L = L1 + t * (L2 - L1);
-            float C = C1 + t * (C2 - C1);
-            float H = color::oklch::lerp_hue(H1, H2, t);
+            double t = (double)curand_uniform(&localState);
+            double L = L1 + t * (L2 - L1);
+            double C = C1 + t * (C2 - C1);
+            double H = color::oklch::lerp_hue(H1, H2, t);
 
             // Mutation
-            if (curand_uniform(&localState) < mutation_rate) {
+            if ((double)curand_uniform(&localState) < mutation_rate) {
                 // Mutate L
-                float L_range = c.max_L - c.min_L;
-                L += curand_normal(&localState) * L_range * 0.1f;
+                double L_range = c.max_L - c.min_L;
+                L += (double)curand_normal(&localState) * L_range * 0.1;
                 if (L < c.min_L) L = c.min_L;
                 if (L > c.max_L) L = c.max_L;
             }
 
-            if (curand_uniform(&localState) < mutation_rate) {
+            if ((double)curand_uniform(&localState) < mutation_rate) {
                 // Mutate H (circular)
-                H += curand_normal(&localState) * c.hue_tolerance * 0.3f;
+                H += (double)curand_normal(&localState) * c.hue_tolerance * 0.3;
                 H = color::oklch::normalize_hue(H);
 
                 // Clamp to constraint range
-                float target = c.target_hue;
-                float hdist = color::hue_distance(H, target);
+                double target = c.target_hue;
+                double hdist = color::hue_distance(H, target);
                 if (hdist > c.hue_tolerance) {
                     // Push back toward valid range
-                    float t_factor = c.hue_tolerance / hdist;
+                    double t_factor = c.hue_tolerance / hdist;
                     H = color::oklch::lerp_hue(target, H, t_factor);
                 }
             }
 
-            if (curand_uniform(&localState) < mutation_rate) {
+            if ((double)curand_uniform(&localState) < mutation_rate) {
                 // Mutate C
-                float C_range = c.max_C - c.min_C;
-                C += curand_normal(&localState) * C_range * 0.15f;
+                double C_range = c.max_C - c.min_C;
+                C += (double)curand_normal(&localState) * C_range * 0.15;
 
                 // Clamp to constraint range and gamut
-                float max_C = color::oklch_max_chroma(L, H);
+                double max_C = color::oklch_max_chroma(L, H);
                 if (C < c.min_C) C = c.min_C;
                 if (C > c.max_C) C = c.max_C;
                 if (C > max_C) C = max_C;
             }
 
             // Ensure gamut validity
-            float max_C = color::oklch_max_chroma(L, H);
+            double max_C = color::oklch_max_chroma(L, H);
             if (C > max_C) C = max_C;
 
             new_pop[new_base + offset + 0] = L;
@@ -487,7 +487,7 @@ __global__ void crossover_and_mutate(
  * Convert OKLCH palette to RGB (for output/display).
  * Single palette conversion on host side.
  */
-void oklch_palette_to_rgb(float* oklch_palette, float* rgb_palette) {
+void oklch_palette_to_rgb(double* oklch_palette, double* rgb_palette) {
     for (int i = 0; i < 16; i++) {
         const OklchSlotConstraint& c = oklch_slot_constraints[i];
         if (c.fixed) {
@@ -496,9 +496,9 @@ void oklch_palette_to_rgb(float* oklch_palette, float* rgb_palette) {
             rgb_palette[i * 3 + 1] = c.fixed_g;
             rgb_palette[i * 3 + 2] = c.fixed_b;
         } else {
-            float L = oklch_palette[i * 3 + 0];
-            float C = oklch_palette[i * 3 + 1];
-            float H = oklch_palette[i * 3 + 2];
+            double L = oklch_palette[i * 3 + 0];
+            double C = oklch_palette[i * 3 + 1];
+            double H = oklch_palette[i * 3 + 2];
             color::oklch_to_srgb(L, C, H, &rgb_palette[i * 3 + 0], &rgb_palette[i * 3 + 1], &rgb_palette[i * 3 + 2]);
         }
     }
@@ -508,15 +508,15 @@ void oklch_palette_to_rgb(float* oklch_palette, float* rgb_palette) {
 // Host Functions (Reporting)
 // =============================================================================
 
-const char* apca_ansi_color(float lc) {
-    float abs_lc = fabsf(lc);
-    if (abs_lc >= 75.0f) return "\033[32m";  // Green - body text
-    if (abs_lc >= 60.0f) return "\033[33m";  // Yellow - large text
-    if (abs_lc >= 45.0f) return "\033[38;2;255;165;0m";  // Orange - bold only
+const char* apca_ansi_color(double lc) {
+    double abs_lc = fabs(lc);
+    if (abs_lc >= 75.0) return "\033[32m";  // Green - body text
+    if (abs_lc >= 60.0) return "\033[33m";  // Yellow - large text
+    if (abs_lc >= 45.0) return "\033[38;2;255;165;0m";  // Orange - bold only
     return "\033[31m";                        // Red - insufficient
 }
 
-void print_color_demo(float* palette) {
+void print_color_demo(double* palette) {
     const char* names[] = {
         "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
         "br.black", "br.red", "br.green", "br.yellow", "br.blue", "br.magenta", "br.cyan", "br.white"
@@ -541,31 +541,31 @@ void print_color_demo(float* palette) {
     printf("APCA Contrast (colors on black background):\n");
     printf("────────────────────────────────────────────────────────────────\n");
 
-    float black_r = palette[BLACK * 3 + 0];
-    float black_g = palette[BLACK * 3 + 1];
-    float black_b = palette[BLACK * 3 + 2];
+    double black_r = palette[BLACK * 3 + 0];
+    double black_g = palette[BLACK * 3 + 1];
+    double black_b = palette[BLACK * 3 + 2];
 
     for (int i = 1; i <= 14; i++) {
         if (i == 8) continue;  // Skip br.black
-        float r = palette[i * 3 + 0];
-        float g = palette[i * 3 + 1];
-        float b = palette[i * 3 + 2];
-        float lc = color::apca::contrast(r, g, b, black_r, black_g, black_b);
-        float abs_lc = fabsf(lc);
+        double r = palette[i * 3 + 0];
+        double g = palette[i * 3 + 1];
+        double b = palette[i * 3 + 2];
+        double lc = color::apca::contrast(r, g, b, black_r, black_g, black_b);
+        double abs_lc = fabs(lc);
 
-        float required = 40.0f;
+        double required = 40.0;
         const char* status = abs_lc >= required ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
         printf("  %-12s Lc=%6.1f (min 40)  %s\n", names[i], abs_lc, status);
     }
 
     // Br.black on black (special case - lower requirement)
     {
-        float r = palette[BR_BLACK * 3 + 0];
-        float g = palette[BR_BLACK * 3 + 1];
-        float b = palette[BR_BLACK * 3 + 2];
-        float lc = color::apca::contrast(r, g, b, black_r, black_g, black_b);
-        float abs_lc = fabsf(lc);
-        const char* status = abs_lc >= 15.0f ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
+        double r = palette[BR_BLACK * 3 + 0];
+        double g = palette[BR_BLACK * 3 + 1];
+        double b = palette[BR_BLACK * 3 + 2];
+        double lc = color::apca::contrast(r, g, b, black_r, black_g, black_b);
+        double abs_lc = fabs(lc);
+        const char* status = abs_lc >= 15.0 ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
         printf("  %-12s Lc=%6.1f (min 15)  %s\n", names[BR_BLACK], abs_lc, status);
     }
 
@@ -575,12 +575,12 @@ void print_color_demo(float* palette) {
     printf("%-12s  L (light)  C (chroma)  H (hue°)\n", "Color");
     printf("────────────────────────────────────────────────────────────────\n");
 
-    float base_hues[6];
+    double base_hues[6];
     for (int i = 1; i <= 6; i++) {
-        float r = palette[i * 3 + 0];
-        float g = palette[i * 3 + 1];
-        float b = palette[i * 3 + 2];
-        float L, C, H;
+        double r = palette[i * 3 + 0];
+        double g = palette[i * 3 + 1];
+        double b = palette[i * 3 + 2];
+        double L, C, H;
         color::rgb_to_oklch(r, g, b, &L, &C, &H);
         base_hues[i-1] = H;
         printf("%-12s  %5.3f      %5.3f       %6.1f°\n", names[i], L, C, H);
@@ -589,12 +589,12 @@ void print_color_demo(float* palette) {
     // Hue spacing analysis
     printf("\nHue Spacing (ideal: 60° between colors):\n");
     printf("────────────────────────────────────────────────────────────────\n");
-    float min_hue_dist = 360.0f;
+    double min_hue_dist = 360.0;
     const char* min_pair_a = "";
     const char* min_pair_b = "";
     for (int i = 0; i < 6; i++) {
         for (int j = i + 1; j < 6; j++) {
-            float hdist = color::hue_distance(base_hues[i], base_hues[j]);
+            double hdist = color::hue_distance(base_hues[i], base_hues[j]);
             if (hdist < min_hue_dist) {
                 min_hue_dist = hdist;
                 min_pair_a = names[i + 1];
@@ -603,9 +603,9 @@ void print_color_demo(float* palette) {
         }
     }
     printf("  Minimum hue distance: %.1f° (between %s and %s)\n", min_hue_dist, min_pair_a, min_pair_b);
-    if (min_hue_dist >= 50.0f) {
+    if (min_hue_dist >= 50.0) {
         printf("  Status: \033[32m✓ Good spacing\033[0m\n");
-    } else if (min_hue_dist >= 30.0f) {
+    } else if (min_hue_dist >= 30.0) {
         printf("  Status: \033[33m~ Acceptable spacing\033[0m\n");
     } else {
         printf("  Status: \033[31m✗ Colors too close in hue\033[0m\n");
@@ -615,13 +615,13 @@ void print_color_demo(float* palette) {
     printf("\nBright/Base Hue Matching (bright should match base hue):\n");
     printf("────────────────────────────────────────────────────────────────\n");
     for (int i = 1; i <= 6; i++) {
-        float L1, C1, H1, L2, C2, H2;
+        double L1, C1, H1, L2, C2, H2;
         color::rgb_to_oklch(palette[i * 3 + 0], palette[i * 3 + 1], palette[i * 3 + 2], &L1, &C1, &H1);
         color::rgb_to_oklch(palette[(i + 8) * 3 + 0], palette[(i + 8) * 3 + 1], palette[(i + 8) * 3 + 2], &L2, &C2, &H2);
-        float hdist = color::hue_distance(H1, H2);
+        double hdist = color::hue_distance(H1, H2);
         printf("  %-10s → br.%-7s: ΔH=%5.1f°  %s\n",
                names[i], names[i], hdist,
-               hdist <= 30.0f ? "\033[32m✓\033[0m" : "\033[31m✗ hue drift\033[0m");
+               hdist <= 30.0 ? "\033[32m✓\033[0m" : "\033[31m✗ hue drift\033[0m");
     }
 }
 
@@ -630,7 +630,7 @@ void print_color_demo(float* palette) {
 // =============================================================================
 
 // Write theme to file
-void write_theme_file(float* palette, const char* filepath) {
+void write_theme_file(double* palette, const char* filepath) {
     FILE* f = fopen(filepath, "w");
     if (!f) {
         printf("Error: Could not open %s for writing: %s\n", filepath, strerror(errno));
@@ -692,8 +692,8 @@ void write_theme_file(float* palette, const char* filepath) {
 int main(int argc, char** argv) {
     int population_size = 200000;
     int generations = 5000;
-    float mutation_rate = 0.15f;
-    float elite_ratio = 0.1f;
+    double mutation_rate = 0.15;
+    double elite_ratio = 0.1;
     const char* output_file = NULL;
     char default_output[256];
 
@@ -807,14 +807,14 @@ int main(int argc, char** argv) {
     cudaMemcpyToSymbol(d_apca_pair_count, &pair_count, sizeof(int));
 
     // Allocate memory
-    size_t palette_size = population_size * 16 * 3 * sizeof(float);
-    float *d_pop1, *d_pop2, *d_fitness;
+    size_t palette_size = population_size * 16 * 3 * sizeof(double);
+    double *d_pop1, *d_pop2, *d_fitness;
     curandState* d_states;
     int* d_elite_indices;
 
     cudaMalloc(&d_pop1, palette_size);
     cudaMalloc(&d_pop2, palette_size);
-    cudaMalloc(&d_fitness, population_size * sizeof(float));
+    cudaMalloc(&d_fitness, population_size * sizeof(double));
     cudaMalloc(&d_states, population_size * sizeof(curandState));
     cudaMalloc(&d_elite_indices, elite_count * sizeof(int));
 
@@ -828,16 +828,16 @@ int main(int argc, char** argv) {
     cudaDeviceSynchronize();
 
     // Host arrays for elite selection
-    std::vector<float> h_fitness(population_size);
+    std::vector<double> h_fitness(population_size);
     std::vector<int> h_elite_indices(elite_count);
 
     // Best-ever tracking (don't rely solely on elitism)
-    float best_ever_fitness = -1e9f;
-    std::vector<float> best_ever_palette(16 * 3);
+    double best_ever_fitness = -1e9;
+    std::vector<double> best_ever_palette(16 * 3);
     int best_ever_generation = 0;
 
     int stagnant_generations = 0;
-    float current_mutation = mutation_rate;
+    double current_mutation = mutation_rate;
 
     printf("Starting evolution...\n\n");
 
@@ -847,7 +847,7 @@ int main(int argc, char** argv) {
         cudaDeviceSynchronize();
 
         // Copy fitness to host
-        cudaMemcpy(h_fitness.data(), d_fitness, population_size * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_fitness.data(), d_fitness, population_size * sizeof(double), cudaMemcpyDeviceToHost);
 
         // Find elite indices
         std::vector<int> indices(population_size);
@@ -860,7 +860,7 @@ int main(int argc, char** argv) {
             h_elite_indices[i] = indices[i];
         }
 
-        float gen_best = h_fitness[indices[0]];
+        double gen_best = h_fitness[indices[0]];
 
         // Track best-ever palette
         if (gen_best > best_ever_fitness) {
@@ -869,13 +869,13 @@ int main(int argc, char** argv) {
             // Save the best palette from device
             int best_idx = indices[0];
             cudaMemcpy(best_ever_palette.data(), d_pop1 + best_idx * 16 * 3,
-                       16 * 3 * sizeof(float), cudaMemcpyDeviceToHost);
+                       16 * 3 * sizeof(double), cudaMemcpyDeviceToHost);
             stagnant_generations = 0;
             current_mutation = mutation_rate;
         } else {
             stagnant_generations++;
             if (stagnant_generations > 100) {
-                current_mutation = fminf(0.5f, current_mutation * 1.01f);
+                current_mutation = fmin(0.5, current_mutation * 1.01);
             }
         }
 
@@ -883,7 +883,7 @@ int main(int argc, char** argv) {
         if (gen % 500 == 0 || gen == generations - 1) {
             printf("Gen %5d: best=%.2f, avg=%.2f, mutation=%.3f\n",
                    gen, gen_best,
-                   std::accumulate(h_fitness.begin(), h_fitness.end(), 0.0f) / population_size,
+                   std::accumulate(h_fitness.begin(), h_fitness.end(), 0.0) / population_size,
                    current_mutation);
         }
 
@@ -908,7 +908,7 @@ int main(int argc, char** argv) {
            best_ever_generation, best_ever_fitness);
 
     // Convert OKLCH palette to RGB for display and output
-    std::vector<float> rgb_palette(16 * 3);
+    std::vector<double> rgb_palette(16 * 3);
     oklch_palette_to_rgb(best_ever_palette.data(), rgb_palette.data());
 
     // Print results
