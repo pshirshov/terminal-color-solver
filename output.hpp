@@ -131,8 +131,8 @@ inline ftxui::Element make_contrast_table(
         ContrastResult cr(fg, bg, wcag_target, apca_target);
 
         char wcag_str[24], apca_str[24];
-        snprintf(wcag_str, sizeof(wcag_str), "%s %.2f", wcag_status_symbol(cr.wcag), cr.wcag);
-        snprintf(apca_str, sizeof(apca_str), "%s %.1f", apca_status_symbol(cr.apca), cr.apca);
+        snprintf(wcag_str, sizeof(wcag_str), "%s%5.2f", wcag_status_symbol(cr.wcag), cr.wcag);
+        snprintf(apca_str, sizeof(apca_str), "%s%6.1f", apca_status_symbol(cr.apca), cr.apca);
 
         // Use fg/bg name as the swatch itself
         std::string pair_label = " " + pair.fg_name + " on " + bg_name + " ";
@@ -183,8 +183,8 @@ inline ftxui::Element make_bright_on_regular_table(
         ContrastResult cr(brt, reg, target, 30.0f);
 
         char wcag_str[24], apca_str[24];
-        snprintf(wcag_str, sizeof(wcag_str), "%s %.2f", wcag_status_symbol(cr.wcag), cr.wcag);
-        snprintf(apca_str, sizeof(apca_str), "%s %.1f", apca_status_symbol(cr.apca), cr.apca);
+        snprintf(wcag_str, sizeof(wcag_str), "%s%5.2f", wcag_status_symbol(cr.wcag), cr.wcag);
+        snprintf(apca_str, sizeof(apca_str), "%s%6.1f", apca_status_symbol(cr.apca), cr.apca);
 
         // Use pair name as the swatch itself
         std::string pair_label = std::string(" br.") + names[i] + " on " + names[i] + " ";
@@ -302,7 +302,7 @@ inline ftxui::Element make_sample_matrix(
 
     // Header row with background indices
     std::vector<f::Element> header_row;
-    header_row.push_back(f::text(" FG\\BG ") | f::bold);
+    header_row.push_back(f::text(" FG\\BG") | f::bold);
     for (int bg = 0; bg < 16; bg++) {
         char bg_str[8];
         snprintf(bg_str, sizeof(bg_str), " %02d ", bg);
@@ -316,29 +316,34 @@ inline ftxui::Element make_sample_matrix(
 
         std::vector<f::Element> row;
         char fg_str[8];
-        snprintf(fg_str, sizeof(fg_str), " %02d ", fg);
+        snprintf(fg_str, sizeof(fg_str), "  %02d  ", fg);
         row.push_back(f::text(fg_str) | f::bold);
 
         for (int bg = 0; bg < 16; bg++) {
             ColorRGB bg_col(palette, bg);
-            char cell_str[8];
-            snprintf(cell_str, sizeof(cell_str), " %02d ", fg);
+            float apca = ::color::apca::contrast(fg_col.r, fg_col.g, fg_col.b, bg_col.r, bg_col.g, bg_col.b);
+
+            char cell_str[12];
+            snprintf(cell_str, sizeof(cell_str), "%s%4.0f",
+                     apca_status_symbol(apca), apca);
             row.push_back(f::text(cell_str) | f::color(fg_col.to_color()) | f::bgcolor(bg_col.to_color()));
         }
         rows.push_back(row);
     }
 
     auto table = f::Table(rows);
+    table.SelectAll().SeparatorVertical(f::LIGHT);
     table.SelectRow(0).BorderBottom(f::LIGHT);
+    table.SelectColumn(0).BorderRight(f::LIGHT);
 
     return f::vbox({
-        f::text("Sample Matrix (FG on BG)") | f::bold,
+        f::text("APCA Contrast Matrix (FG on BG)") | f::bold,
         f::separator(),
         table.Render()
     });
 }
 
-inline void print_palette_and_matrix_side_by_side(
+inline void print_palette_and_matrix(
     float* palette,
     const char** names
 ) {
@@ -347,15 +352,16 @@ inline void print_palette_and_matrix_side_by_side(
     auto palette_table = make_palette_table(palette, names);
     auto matrix = make_sample_matrix(palette);
 
-    auto layout = f::hbox({
-        palette_table,
-        f::text("  "),
-        matrix
-    });
+    // Print palette table
+    auto palette_screen = f::Screen::Create(f::Dimension::Fit(palette_table));
+    f::Render(palette_screen, palette_table);
+    palette_screen.Print();
+    std::cout << std::endl;
 
-    auto screen = f::Screen::Create(f::Dimension::Fit(layout));
-    f::Render(screen, layout);
-    screen.Print();
+    // Print contrast matrix below
+    auto matrix_screen = f::Screen::Create(f::Dimension::Fit(matrix));
+    f::Render(matrix_screen, matrix);
+    matrix_screen.Print();
     std::cout << std::endl;
 }
 

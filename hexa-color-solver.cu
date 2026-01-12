@@ -557,8 +557,8 @@ void print_color_demo(float* palette) {
     printf("                              COLOR PALETTE RESULTS\n");
     printf("══════════════════════════════════════════════════════════════════════════════\n\n");
 
-    // Palette table and sample matrix side by side (using FTXUI)
-    output::print_palette_and_matrix_side_by_side(palette, names);
+    // Palette table and contrast matrix (using FTXUI)
+    output::print_palette_and_matrix(palette, names);
 
     printf("Legend: \033[32m>=4.5 AA\033[0m  \033[33m>=3.0 OK\033[0m  \033[31m<3.0 BAD\033[0m\n\n");
 
