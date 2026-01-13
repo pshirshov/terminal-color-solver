@@ -116,11 +116,14 @@ const ApcaPairConstraint apca_pair_constraints[] = {
 
     // Bright colors on black - target 80 for uniformity
     {BR_RED,     BLACK, 85.0, 85.0},  // br.red on black
-    {BR_GREEN,   BLACK, 85.0, 85.0},  // br.green on black
     {BR_YELLOW,  BLACK, 85.0, 85.0},  // br.yellow on black
-    {BR_BLUE,    BLACK, 85.0, 85.0},  // br.blue on black
     {BR_MAGENTA, BLACK, 85.0, 85.0},  // br.magenta on black
+
+    // might want to lower
+    {BR_GREEN,   BLACK, 85.0, 85.0},  // br.green on black
+    {BR_BLUE,    BLACK, 85.0, 85.0},  // br.blue on black
     {BR_CYAN,    BLACK, 85.0, 85.0},  // br.cyan on black
+
     {BR_BLACK,   BLACK, 40.0, 40.0},  // br.black on black (no uniformity target - standalone)
 };
 
