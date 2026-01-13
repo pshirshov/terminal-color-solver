@@ -82,22 +82,22 @@ struct ApcaPairConstraint {
 const OklchSlotConstraint oklch_slot_constraints[16] = {
     // Base colors (0-7)
     {   0,   0, 0.00, 0.00, 0.00, 0.00, true,    0,   0,   0, -1,  0},  // 0: BLACK (fixed)
-    {  29,  25, 0.40, 0.85, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 1: RED (L max for APCA≥60)
-    { 142,  25, 0.45, 0.85, 0.10, 0.25, false,   0,   0,   0, -1,  0},  // 2: GREEN
-    { 110,  20, 0.70, 0.90, 0.12, 0.25, false,   0,   0,   0, -1,  0},  // 3: YELLOW
-    { 264,  25, 0.45, 0.85, 0.10, 0.25, false,   0,   0,   0, -1,  0},  // 4: BLUE (L max for APCA≥60)
-    { 328,  25, 0.50, 0.85, 0.12, 0.28, false,   0,   0,   0, -1,  0},  // 5: MAGENTA (L max for APCA)
-    { 195,  25, 0.55, 0.85, 0.08, 0.20, false,   0,   0,   0, -1,  0},  // 6: CYAN
-    {   0,   0, 0.75, 0.85, 0.00, 0.03, false,   0,   0,   0, -1,  0},  // 7: WHITE (neutral)
+    {  29,  25, 0.40, 0.90, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 1: RED (L max for APCA≥60)
+    { 142,  25, 0.40, 0.90, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 2: GREEN
+    { 110,  25, 0.40, 0.90, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 3: YELLOW
+    { 264,  25, 0.40, 0.90, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 4: BLUE (L max for APCA≥60)
+    { 328,  25, 0.40, 0.90, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 5: MAGENTA (L max for APCA)
+    { 195,  25, 0.40, 0.90, 0.08, 0.30, false,   0,   0,   0, -1,  0},  // 6: CYAN
+    {   0,   0, 0.75, 0.92, 0.00, 0.03, false,   0,   0,   0, -1,  0},  // 7: WHITE (L max for APCA≥85)
 
     // Bright colors (8-15)
     {   0,   0, 0.50, 0.60, 0.00, 0.03, false,   0,   0,   0, -1,  0},  // 8: BR_BLACK (L≥0.50 for APCA≥40 on black)
-    {  29,  25, 0.60, 0.98, 0.12, 0.30, false,   0,   0,   0,  1, 20},  // 9: BR_RED (L max for APCA≥80)
-    { 142,  30, 0.65, 0.98, 0.12, 0.28, false,   0,   0,   0,  2, 20},  // 10: BR_GREEN (base=GREEN)
-    { 110,  25, 0.85, 0.98, 0.12, 0.22, false,   0,   0,   0,  3, 15},  // 11: BR_YELLOW (base=YELLOW)
-    { 264,  30, 0.60, 0.98, 0.10, 0.25, false,   0,   0,   0,  4, 25},  // 12: BR_BLUE (L max for APCA≥80)
-    { 328,  30, 0.65, 0.98, 0.12, 0.26, false,   0,   0,   0,  5, 20},  // 13: BR_MAGENTA (L max for APCA≥80)
-    { 195,  30, 0.70, 0.98, 0.08, 0.20, false,   0,   0,   0,  6, 20},  // 14: BR_CYAN (base=CYAN)
+    {  29,  25, 0.65, 0.98, 0.12, 0.30, false,   0,   0,   0,  1, 20},  // 9: BR_RED (L max for APCA≥80)
+    { 142,  25, 0.65, 0.98, 0.12, 0.30, false,   0,   0,   0,  2, 20},  // 10: BR_GREEN (base=GREEN)
+    { 110,  25, 0.65, 0.98, 0.12, 0.30, false,   0,   0,   0,  3, 20},  // 11: BR_YELLOW (base=YELLOW)
+    { 264,  25, 0.65, 0.98, 0.12, 0.30, false,   0,   0,   0,  4, 20},  // 12: BR_BLUE (L max for APCA≥80)
+    { 328,  25, 0.65, 0.98, 0.12, 0.30, false,   0,   0,   0,  5, 20},  // 13: BR_MAGENTA (L max for APCA≥80)
+    { 195,  25, 0.65, 0.98, 0.12, 0.30, false,   0,   0,   0,  6, 20},  // 14: BR_CYAN (base=CYAN)
     {   0,   0, 1.00, 1.00, 0.00, 0.00, true,  255, 255, 255, -1,  0},  // 15: BR_WHITE (fixed)
 };
 
@@ -106,12 +106,13 @@ const OklchSlotConstraint oklch_slot_constraints[16] = {
 const ApcaPairConstraint apca_pair_constraints[] = {
     // Base colors on black - target 50 for uniformity (all should cluster around this value)
     {RED,        BLACK, 60.0, 65.0},  // red on black
-    {GREEN,      BLACK, 60.0, 65.0},  // green on black
     {YELLOW,     BLACK, 60.0, 65.0},  // yellow on black
-    {BLUE,       BLACK, 60.0, 65.0},  // blue on black
     {MAGENTA,    BLACK, 60.0, 65.0},  // magenta on black
-    {CYAN,       BLACK, 60.0, 65.0},  // cyan on black
-    {WHITE,      BLACK, 75.0, 75.0},  // white on black
+
+    {CYAN,       BLACK, 60.0, 60.0},  // cyan on black
+    {GREEN,      BLACK, 50.0, 50.0},  // green on black
+    {BLUE,       BLACK, 30.0, 30.0},  // blue on black
+    {WHITE,      BLACK, 85.0, 85.0},  // white on black
 
     // Bright colors on black - target 80 for uniformity
     {BR_RED,     BLACK, 85.0, 85.0},  // br.red on black
@@ -121,45 +122,6 @@ const ApcaPairConstraint apca_pair_constraints[] = {
     {BR_MAGENTA, BLACK, 85.0, 85.0},  // br.magenta on black
     {BR_CYAN,    BLACK, 85.0, 85.0},  // br.cyan on black
     {BR_BLACK,   BLACK, 40.0, 40.0},  // br.black on black (no uniformity target - standalone)
-
-
-    // // Colors on cyan background (no uniformity target)
-    // {BLACK,   CYAN, 20.0, 0.0},  // black on cyan
-    // {RED,     CYAN, 20.0, 0.0},  // red on cyan
-    // {GREEN,   CYAN, 20.0, 0.0},  // green on cyan
-    // {YELLOW,  CYAN, 20.0, 0.0},  // yellow on cyan
-    // {BLUE,    CYAN, 20.0, 0.0},  // blue on cyan
-    // {MAGENTA, CYAN, 20.0, 0.0},  // magenta on cyan
-    // {WHITE,   CYAN, 20.0, 0.0},  // white on cyan
-
-    // // Colors on green background (no uniformity target)
-    // {BLACK,   GREEN, 20.0, 0.0},  // black on green
-    // {RED,     GREEN, 20.0, 0.0},  // red on green
-    // {YELLOW,  GREEN, 20.0, 0.0},  // yellow on green
-    // {BLUE,    GREEN, 20.0, 0.0},  // blue on green
-    // {MAGENTA, GREEN, 20.0, 0.0},  // magenta on green
-    // {CYAN,    GREEN, 20.0, 0.0},  // cyan on green
-    {WHITE,   GREEN, 40.0, 0.0},  // white on green
-    {WHITE,   BLUE, 40.0, 0.0},  // white on green
-    {WHITE,   CYAN, 40.0, 0.0},  // white on green
-
-    // // Colors on blue background (no uniformity target)
-    // {BLACK,   BLUE, 20.0, 0.0},  // black on blue
-    // {RED,     BLUE, 20.0, 0.0},  // red on blue
-    // {GREEN,   BLUE, 20.0, 0.0},  // green on blue
-    // {YELLOW,  BLUE, 20.0, 0.0},  // yellow on blue
-    // {MAGENTA, BLUE, 20.0, 0.0},  // magenta on blue
-    // {CYAN,    BLUE, 20.0, 0.0},  // cyan on blue
-    // {WHITE,   BLUE, 20.0, 0.0},  // white on blue
-
-    // Bright on corresponding base color (need APCA >= 30)
-    // {BR_RED,     RED,     20.0, 0.0},  // br.red on red
-    // {BR_GREEN,   GREEN,   20.0, 0.0},  // br.green on green
-    // {BR_YELLOW,  YELLOW,  20.0, 0.0},  // br.yellow on yellow
-    // {BR_BLUE,    BLUE,    20.0, 0.0},  // br.blue on blue
-    // {BR_MAGENTA, MAGENTA, 20.0, 0.0},  // br.magenta on magenta
-    // {BR_CYAN,    CYAN,    20.0, 0.0},  // br.cyan on cyan
-    // {BR_WHITE,   WHITE,   20.0, 0.0},  // br.white on white
 };
 
 constexpr int APCA_CONSTRAINT_COUNT = sizeof(apca_pair_constraints) / sizeof(apca_pair_constraints[0]);
@@ -262,12 +224,14 @@ __global__ void evaluate_fitness(double* palettes, double* fitness, int n_palett
             score += 100.0;
 
             if (p.target_apca > 0.0) {
-                // Uniformity mode: penalize only when BELOW target (not above)
+                // Uniformity mode: asymmetric penalty (heavier below, lighter above)
                 if (apca < p.target_apca) {
                     double shortfall = p.target_apca - apca;
-                    score -= shortfall * 3.0;
+                    score -= shortfall * 3.0;  // Heavy penalty for below target
+                } else {
+                    double excess = apca - p.target_apca;
+                    score -= excess * 1.0;  // Light penalty for exceeding (uniformity)
                 }
-                // No penalty for exceeding target - that's fine
             } else {
                 // No target: reward exceeding minimum (old behavior)
                 score += (apca - p.min_apca) * 5.0;
